@@ -1,0 +1,88 @@
+#!/bin/bash
+
+gist-list(){
+  pygist --list
+}
+
+gist-info(){
+  local g
+  if [ -z "$1" ]; then
+    g=$(gist-list | fzsl | cut -f1 -d" ")
+  else
+    g="$1"
+  fi
+
+  pygist --info --id $g
+}
+
+gist-clone(){
+  pygist --clone --id $1 --name $2
+}
+
+gist-content(){
+  pygist --content --id $1
+}
+
+gist-files(){
+  pygist --files --id $1
+}
+
+gist-archive(){
+  pygist --archive --id $1
+}
+
+gist-create(){
+  pygist --create $@
+}
+
+gist-delete(){
+  pygist --delete --id $1
+}
+
+gist() {
+  case $1 in
+    delete)
+      shift
+      gist-delete $@
+      ;;
+    archive)
+      shift
+      gist-archive $@
+      ;;
+    list)
+      shift
+      gist-list $@
+      ;;
+    info)
+      shift
+      gist-info $@
+      ;;
+    clone)
+      shift
+      gist-clone $@
+      ;;
+    content)
+      shift
+      gist-content $@
+      ;;
+    files)
+      shift
+      gist-files $@
+      ;;
+    create)
+      shift
+      gist-create $@
+      ;;
+  esac
+}
+
+__gist()
+{
+  local curr=${COMP_WORDS[COMP_CWORD]}
+  local prev=${COMP_WORDS[COMP_CWORD - 1]}
+
+  COMPREPLY=( $(compgen -W "delete create archive files content clone list info" -- $curr) )
+  return 0
+}
+
+complete -F __gist gist
