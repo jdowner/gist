@@ -5,14 +5,7 @@ gist-list(){
 }
 
 gist-info(){
-  local g
-  if [ -z "$1" ]; then
-    g=$(gist-list | fzsl | cut -f1 -d" ")
-  else
-    g="$1"
-  fi
-
-  pygist --info --id $g
+  pygist --info --id $1
 }
 
 gist-clone(){
