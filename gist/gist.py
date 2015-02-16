@@ -301,7 +301,7 @@ class GistAPI(object):
                     archive.add(fp.name, arcname=name)
 
 
-if __name__ == "__main__":
+def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser()
     parser.add_argument('--list', action='store_true')
     parser.add_argument('--info', action='store_true')
@@ -329,31 +329,31 @@ if __name__ == "__main__":
 
     if args.list:
         gist.list()
-        sys.exit(0)
+        return
 
     if args.info:
         gist.info(args.id)
-        sys.exit(0)
+        return
 
     if args.clone:
         gist.clone(args.id, args.name)
-        sys.exit(0)
+        return
 
     if args.content:
         gist.content(args.id)
-        sys.exit(0)
+        return
 
     if args.files:
         gist.files(args.id)
-        sys.exit(0)
+        return
 
     if args.archive:
         gist.archive(args.id)
-        sys.exit(0)
+        return
 
     if args.delete:
         gist.delete(args.id)
-        sys.exit(0)
+        return
 
     if args.create:
         if sys.stdin.isatty():
@@ -370,6 +370,7 @@ if __name__ == "__main__":
                         }
                     }
             gist.create(description, files, public)
-        sys.exit(0)
 
-    sys.exit(1)
+
+if __name__ == "__main__":
+    main()
