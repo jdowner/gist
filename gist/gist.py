@@ -297,7 +297,7 @@ class GistAPI(object):
             for name, data in gist['files'].items():
                 with tempfile.NamedTemporaryFile() as fp:
                     fp.write(data['content'])
-                    fp.seek(0)
+                    fp.flush()
                     archive.add(fp.name, arcname=name)
 
 
