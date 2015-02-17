@@ -3,13 +3,13 @@
 
 Usage:
     gist list
-    gist info <sha>
-    gist files <sha>
-    gist delete <sha>
-    gist archive <sha>
-    gist content <sha>
+    gist info <id>
+    gist files <id>
+    gist delete <id>
+    gist archive <id>
+    gist content <id>
     gist create <desc> [--public] [FILES ...]
-    gist clone <sha> [<name>]
+    gist clone <id> [<name>]
 
 Description:
     This program provides a command line interface for interacting with github
@@ -333,27 +333,27 @@ def main(argv=sys.argv[1:]):
         return
 
     if args['info']:
-        gist.info(args['<sha>'])
+        gist.info(args['<id>'])
         return
 
     if args['clone']:
-        gist.clone(args['<sha>'], args['<name>'])
+        gist.clone(args['<id>'], args['<name>'])
         return
 
     if args['content']:
-        gist.content(args['<sha>'])
+        gist.content(args['<id>'])
         return
 
     if args['files']:
-        gist.files(args['<sha>'])
+        gist.files(args['<id>'])
         return
 
     if args['archive']:
-        gist.archive(args['<sha>'])
+        gist.archive(args['<id>'])
         return
 
     if args['delete']:
-        gist.delete(args['<sha>'])
+        gist.delete(args['<id>'])
         return
 
     if args['create']:
