@@ -1,6 +1,23 @@
 #!/usr/bin/env python
+"""gist
 
-import argparse
+Usage:
+    gist list
+    gist info <sha>
+    gist files <sha>
+    gist delete <sha>
+    gist archive <sha>
+    gist content <sha>
+    gist create <desc> [--public] [FILES ...]
+    gist clone <sha> [<name>]
+
+Description:
+    This program provides a command line interface for interacting with github
+    gists.
+
+"""
+
+import docopt
 import fcntl
 import json
 import os
@@ -302,68 +319,52 @@ class GistAPI(object):
 
 
 def main(argv=sys.argv[1:]):
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--list', action='store_true')
-    parser.add_argument('--info', action='store_true')
-    parser.add_argument('--clone', action='store_true')
-    parser.add_argument('--content', action='store_true')
-    parser.add_argument('--create', action='store_true')
-    parser.add_argument('--delete', action='store_true')
-    parser.add_argument('--files', action='store_true')
-    parser.add_argument('--archive', action='store_true')
-    parser.add_argument('--public', dest='public', action='store_true')
-    parser.add_argument('--private', dest='public', action='store_false')
-    parser.add_argument('-i', '--id')
-    parser.add_argument('-n', '--name', default='')
-    parser.add_argument('-d', '--desc', nargs='+')
-    parser.add_argument('-f', '--filenames', nargs='+')
-    parser.add_argument('-c', '--config', default=os.path.expanduser('~/.gist'))
+    args = docopt.docopt(__doc__, argv=argv, version='gist-v0.1.0')
 
-    args = parser.parse_args()
-
+    # Read in the configuration file
     config = configparser.ConfigParser()
-    with open(args.config) as fp:
+    with open(os.path.expanduser('~/.gist')) as fp:
         config.readfp(fp)
 
     gist = GistAPI(token=config.get('gist', 'token'))
 
-    if args.list:
+    if args['list']:
         gist.list()
         return
 
-    if args.info:
-        gist.info(args.id)
+    if args['info']:
+        gist.info(args['<sha>'])
         return
 
-    if args.clone:
-        gist.clone(args.id, args.name)
+    if args['clone']:
+        gist.clone(args['<sha>'], args['<name>'])
         return
 
-    if args.content:
-        gist.content(args.id)
+    if args['content']:
+        gist.content(args['<sha>'])
         return
 
-    if args.files:
-        gist.files(args.id)
+    if args['files']:
+        gist.files(args['<sha>'])
         return
 
-    if args.archive:
-        gist.archive(args.id)
+    if args['archive']:
+        gist.archive(args['<sha>'])
         return
 
-    if args.delete:
-        gist.delete(args.id)
+    if args['delete']:
+        gist.delete(args['<sha>'])
         return
 
-    if args.create:
+    if args['create']:
         if sys.stdin.isatty():
-            description = ' '.join(args.desc)
-            files = {f: {'content': open(f).read()} for f in args.filenames}
-            gist.create(description, files, args.public)
+            description = args['<desc>']
+            files = {f: {'content': open(f).read()} for f in args['FILES']}
+            gist.create(description, files, args['--public'])
         else:
             content = sys.stdin.read()
-            description = ' '.join(args.desc)
-            public = args.public
+            description = args['<desc>']
+            public = args['--public']
             files = {
                     'file1.txt': {
                         'content': content,
