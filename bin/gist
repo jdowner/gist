@@ -1,0 +1,139 @@
+#!/usr/bin/env python
+"""gist
+
+Usage:
+    gist list
+    gist info <id>
+    gist files <id>
+    gist delete <id>
+    gist archive <id>
+    gist content <id>
+    gist create <desc> [--public] [FILES ...]
+    gist clone <id> [<name>]
+
+Description:
+    This program provides a command line interface for interacting with github
+    gists.
+
+"""
+
+import docopt
+import fcntl
+import os
+import struct
+import sys
+import termios
+
+import json
+
+from gist import GistAPI
+
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
+
+
+def terminal_width():
+    """Returns the terminal width
+
+    Tries to determine the width of the terminal. If there is no terminal, then
+    None is returned instead.
+
+    """
+    try:
+        h, w, hp, wp = struct.unpack('HHHH',
+            fcntl.ioctl(0, termios.TIOCGWINSZ,
+            struct.pack('HHHH', 0, 0, 0, 0)))
+        return w
+    except IOError:
+        raise
+
+
+def elide(txt, width=terminal_width()):
+    """Elide the provided string
+
+    The string is elided to the specified width, which defaults to the width of
+    the terminal.
+
+    Arguments:
+        txt: the string to potentially elide
+        width: the maximum permitted length of the string
+
+    Returns:
+        A string that is no longer than the specified width.
+
+    """
+    try:
+        if len(txt) > width:
+            return txt[:width - 3] + '...'
+    except Exception:
+        pass
+    return txt
+
+
+def main(argv=sys.argv[1:]):
+    args = docopt.docopt(__doc__, argv=argv, version='gist-v0.1.0')
+
+    # Read in the configuration file
+    config = configparser.ConfigParser()
+    with open(os.path.expanduser('~/.gist')) as fp:
+        config.readfp(fp)
+
+    gist = GistAPI(token=config.get('gist', 'token'))
+
+    if args['list']:
+        gists = gist.list()
+        for info in gists:
+            public = '+' if info.public else '-'
+            line = '{} {} {}'.format( info.id, public, info.desc)
+            print(elide(line))
+        return
+
+    if args['info']:
+        info = gist.info(args['<id>'])
+        print(json.dumps(info, indent=2))
+        return
+
+    if args['clone']:
+        gist.clone(args['<id>'], args['<name>'])
+        return
+
+    if args['content']:
+        content = gist.content(args['<id>'])
+        for name, lines in content.items():
+            print('{}:\n{}\n'.format(name, lines))
+        return
+
+    if args['files']:
+        for f in gist.files(args['<id>']):
+            print(f)
+        return
+
+    if args['archive']:
+        gist.archive(args['<id>'])
+        return
+
+    if args['delete']:
+        gist.delete(args['<id>'])
+        return
+
+    if args['create']:
+        if sys.stdin.isatty():
+            files = {f: {'content': open(f).read()} for f in args['FILES']}
+        else:
+            content = sys.stdin.read()
+            files = {
+                    'file1.txt': {
+                        'content': content,
+                        }
+                    }
+
+        description = args['<desc>']
+        public = args['--public']
+
+        print(gist.create(description, files, public))
+
+
+if __name__ == "__main__":
+    main()

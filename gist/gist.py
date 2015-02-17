@@ -1,75 +1,13 @@
-#!/usr/bin/env python
-"""gist
-
-Usage:
-    gist list
-    gist info <id>
-    gist files <id>
-    gist delete <id>
-    gist archive <id>
-    gist content <id>
-    gist create <desc> [--public] [FILES ...]
-    gist clone <id> [<name>]
-
-Description:
-    This program provides a command line interface for interacting with github
-    gists.
-
-"""
-
-import docopt
-import fcntl
+import collections
 import json
 import os
 import requests
-import struct
-import sys
 import tarfile
 import tempfile
-import termios
-
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
 
 
-def terminal_width():
-    """Returns the terminal width
-
-    Tries to determine the width of the terminal. If there is no terminal, then
-    None is returned instead.
-
-    """
-    try:
-        h, w, hp, wp = struct.unpack('HHHH',
-            fcntl.ioctl(0, termios.TIOCGWINSZ,
-            struct.pack('HHHH', 0, 0, 0, 0)))
-        return w
-    except IOError:
-        pass
-
-
-def elide(txt, width=terminal_width()):
-    """Elide the provided string
-
-    The string is elided to the specified width, which defaults to the width of
-    the terminal.
-
-    Arguments:
-        txt: the string to potentially elide
-        width: the maximum permitted length of the string
-
-    Returns:
-        A string that is no longer than the specified width.
-
-    """
-    try:
-        if len(txt) > width:
-            return txt[:width - 3] + '...'
-    except Exception:
-        pass
-    return txt
+class GistInfo(collections.namedtuple('GistInfo', 'id public desc')):
+    pass
 
 
 class authenticate(object):
@@ -184,28 +122,21 @@ class GistAPI(object):
 
     @authenticate.get
     def list(self, request):
-        """Prints a list of the users gists
-
-        An example of the print out from this function is,
-
-            bd99a4fd2677539d2706 + foo
-            41f6530ba1d9e86f6729 + bar
-            c78d925546e964b4b1df - baz
-
-        The first column is the identifier of the gist, the second columns is
-        either a '+' or '-' and corresponds to either a public or private gist,
-        the final column is the description of the gist, which may be empty.
+        """Returns a list of the users gists as GistInfo objects
 
         Arguments:
             request: an initial request object
 
+        Returns:
+            a list of GistInfo objects
+
         """
         gists = self.send(request).json()
+        info = []
         for gist in gists:
-            desc = gist['description']
-            public = '+' if gist['public'] else '-'
-            line = '{} {} {}'.format(gist['id'], public, desc)
-            print(elide(line))
+            info.append(GistInfo(gist['id'], gist['public'], gist['description']))
+
+        return info
 
     @authenticate.post
     def create(self, request, desc, files, public=False):
@@ -217,13 +148,16 @@ class GistAPI(object):
             files:   a list of files to add to the gist
             public:  a flag to indicate whether the gist is public or not
 
+        Returns:
+            The URL to the newly created gist.
+
         """
         request.data = json.dumps({
                 "description": desc,
                 "public": public,
                 "files": files,
                 })
-        print(self.send(request).json()['url'])
+        return self.send(request).json()['url']
 
     @authenticate.delete
     def delete(self, request, id):
@@ -251,45 +185,47 @@ class GistAPI(object):
 
     @authenticate.get
     def info(self, request, id):
-        """Print complete information about a gist
+        """Returns info about a given gist
 
         Arguments:
             request: an initial request object
             id:      the gist identifier
 
+        Returns:
+            A dict containing the gist info
+
         """
-        gist = self.send(request, id).json()
-        print(json.dumps(gist, indent=2))
+        return self.send(request, id).json()
 
     @authenticate.get
     def files(self, request, id):
-        """Print out files in a gist
+        """Returns a list of files in the gist
 
         Arguments:
             request: an initial request object
             id:      the gist identifier
 
+        Returns:
+            A list of the files
+
         """
         gist = self.send(request, id).json()
-        for name in gist['files']:
-            print(name)
+        return gist['files']
 
     @authenticate.get
     def content(self, request, id):
-        """Print out the content of the file in a gist
+        """Returns the content of the gist
 
         Arguments:
             request: an initial request object
             id:      the gist identifier
 
+        Returns:
+            A dict containing the contents of each file in the gist
+
         """
         gist = self.send(request, id).json()
-        for name, data in gist['files'].items():
-            print('{}:\n'.format(name))
-            for line in data['content'].splitlines():
-                print(line)
-            print
-            print
+        return {name: data['content'] for name, data in gist['files'].items()}
 
     @authenticate.get
     def archive(self, request, id):
@@ -316,62 +252,3 @@ class GistAPI(object):
                     fp.write(data['content'])
                     fp.flush()
                     archive.add(fp.name, arcname=name)
-
-
-def main(argv=sys.argv[1:]):
-    args = docopt.docopt(__doc__, argv=argv, version='gist-v0.1.0')
-
-    # Read in the configuration file
-    config = configparser.ConfigParser()
-    with open(os.path.expanduser('~/.gist')) as fp:
-        config.readfp(fp)
-
-    gist = GistAPI(token=config.get('gist', 'token'))
-
-    if args['list']:
-        gist.list()
-        return
-
-    if args['info']:
-        gist.info(args['<id>'])
-        return
-
-    if args['clone']:
-        gist.clone(args['<id>'], args['<name>'])
-        return
-
-    if args['content']:
-        gist.content(args['<id>'])
-        return
-
-    if args['files']:
-        gist.files(args['<id>'])
-        return
-
-    if args['archive']:
-        gist.archive(args['<id>'])
-        return
-
-    if args['delete']:
-        gist.delete(args['<id>'])
-        return
-
-    if args['create']:
-        if sys.stdin.isatty():
-            description = args['<desc>']
-            files = {f: {'content': open(f).read()} for f in args['FILES']}
-            gist.create(description, files, args['--public'])
-        else:
-            content = sys.stdin.read()
-            description = args['<desc>']
-            public = args['--public']
-            files = {
-                    'file1.txt': {
-                        'content': content,
-                        }
-                    }
-            gist.create(description, files, public)
-
-
-if __name__ == "__main__":
-    main()
