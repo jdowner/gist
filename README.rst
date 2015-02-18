@@ -21,10 +21,10 @@ take the form,::
 Dependencies
 --------------------------------------------------
 
-'gist' currently depends on,::
+'gist' currently depends on,
 
-  requests
-  docopts
+* requests
+* docopts
 
 
 
