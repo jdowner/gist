@@ -2,7 +2,7 @@ build:
 	python setup.py build
 
 install: build
-	sudo python setup.py install --record installed-files.txt
+	sudo python setup.py install --record installed-files.txt --single-version-externally-managed
 
 uninstall:
 	@if [ -e "installed-files.txt" ]; then \
