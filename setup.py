@@ -19,7 +19,7 @@ setuptools.setup(
           '': ['*.rst', 'LICENSE'],
         },
         data_files=[
-          ('share/gist/', ['README.rst', 'LICENSE']),
+          ('share/gist/', ['README.rst', 'LICENSE', 'etc/gist.bash']),
         ],
         scripts=['bin/gist'],
         platforms=['Unix'],
