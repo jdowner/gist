@@ -120,7 +120,7 @@ def main(argv=sys.argv[1:]):
 
     if args['create']:
         if sys.stdin.isatty():
-            files = {f: {'content': open(f).read()} for f in args['FILES']}
+            files = {os.path.basename(f): {'content': open(f).read()} for f in args['FILES']}
         else:
             content = sys.stdin.read()
             files = {
