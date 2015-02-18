@@ -157,7 +157,7 @@ class GistAPI(object):
                 "public": public,
                 "files": files,
                 })
-        return self.send(request).json()['url']
+        return self.send(request).json()['html_url']
 
     @authenticate.delete
     def delete(self, request, id):
