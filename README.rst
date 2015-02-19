@@ -61,7 +61,7 @@ of files,::
 
   $ git create "divide et impera" foo.txt bar.txt
 
-but often it is useful to take create a gist from data that may be on the
+but often it is useful to create a gist from data that may be on the
 clipboard,::
 
   $ xclip -o | gist create "ipsa scientia potestas est"
