@@ -46,6 +46,7 @@ Usage
 'gist' is intended to make it easy to manage and use github gists from the
 command line. There are several commands available::
 
+  gist edit    - edit the files in your gist
   gist list    - prints a list of your gists
   gist info    - prints detailed information about a gist
   gist files   - prints a list of the files in a gist
@@ -69,6 +70,13 @@ clipboard,
 or, perhaps, you want to create some quick notes and put them in a gist,
 ::
   $ echo $(cat) | gist create "credo quia absurdum est"
+
+
+You can also edit your gists directly with the 'edit' command. This command will
+clone the gist to a temporary directory and open up the default editor (defined by
+the EDITOR environment variable) to edit the files in the gist. When the editor
+is exited the user is prompted to commit the changes, which are then pushed back
+to the remote.
 
 
 Dependencies
