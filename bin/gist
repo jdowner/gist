@@ -3,6 +3,7 @@
 
 Usage:
     gist list
+    gist edit <id>
     gist info <id>
     gist files <id>
     gist delete <id>
@@ -93,6 +94,10 @@ def main(argv=sys.argv[1:]):
     if args['info']:
         info = gist.info(args['<id>'])
         print(json.dumps(info, indent=2))
+        return
+
+    if args['edit']:
+        info = gist.edit(args['<id>'])
         return
 
     if args['clone']:

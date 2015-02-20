@@ -1,9 +1,19 @@
 import collections
+import contextlib
 import json
 import os
 import requests
+import shutil
 import tarfile
 import tempfile
+
+
+@contextlib.contextmanager
+def pushd(path):
+    original = os.getcwd()
+    os.chdir(path)
+    yield
+    os.chdir(original)
 
 
 class GistInfo(collections.namedtuple('GistInfo', 'id public desc')):
@@ -256,3 +266,29 @@ class GistAPI(object):
                     fp.write(data['content'])
                     fp.flush()
                     archive.add(fp.name, arcname=name)
+
+    @authenticate.get
+    def edit(self, request, id):
+        """Edit a gist
+
+        The files in the gist a cloned to a temporary directory and passed to
+        the default editor (defined by the EDITOR environmental variable). When
+        the user exits the editor, they will be provided with a prompt to commit
+        the changes, which will then be pushed to the remote.
+
+        Arguments:
+            request: an initial request object
+            id:      the gist identifier
+
+        """
+        with pushd(tempfile.gettempdir()):
+            try:
+                self.clone(id)
+                with pushd(id):
+                    files = [f for f in os.listdir('.') if os.path.isfile(f)]
+                    quoted = ['"{}"'.format(f) for f in files]
+                    os.system("${{EDITOR}} {}".format(' '.join(quoted)))
+                    os.system('git commit -av && git push')
+
+            finally:
+                shutil.rmtree(id)
