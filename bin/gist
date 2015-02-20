@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-"""gist
+"""
+Name:
+    gist
 
 Usage:
     gist list
@@ -15,6 +17,77 @@ Usage:
 Description:
     This program provides a command line interface for interacting with github
     gists.
+
+Commands:
+    create
+        Create a new gist. A gist can be created in several ways. The content of
+        the gist can be piped to the gist,
+
+            $ echo "this is the content" | gist create "gist description"
+
+        The gist can be created from an existing set of files,
+
+            $ gist create "gist description" foo.txt bar.txt
+
+        The gist can be created on the fly,
+
+            $ gist create "gist description"
+
+        which will open the users default editor.
+
+    edit
+        You can edit your gists directly with the 'edit' command. This command
+        will clone the gist to a temporary directory and open up the default
+        editor (defined by the EDITOR environment variable) to edit the files in
+        the gist. When the editor is exited the user is prompted to commit the
+        changes, which are then pushed back to the remote.
+
+    list
+        Returns a list of your gists. The gists are returned as,
+
+            2b1823252e8433ef8682 - mathematical divagations
+            a485ee9ddf6828d697be - notes on defenestration
+            589071c7a02b1823252e + abecedarian pericombobulations
+
+        The first column is the gists unique identifier; The second column
+        indicates whether the gist is public ('+') or private ('-'); The third
+        column is the description in the gist, which may be empty.
+
+    clone
+        Clones a gist to the current directory. This command will clone any gist
+        based on its unique identifier (i.e. not just the users) to the current
+        directory.
+
+    delete
+        Deletes the specified gist.
+
+    files
+        Returns a list of the files in the specified gist.
+
+    archive
+        Downloads the specified gist to a temporary directory and adds it to a
+        tarball, which is then moved to the current directory.
+
+    content
+        Writes the content of each file in the specified gist to the terminal,
+        e.g.
+
+            $ gist content c971fca7997aed65ddc9
+            foo.txt:
+            this is foo
+
+
+            bar.txt:
+            this is bar
+
+
+        For each file in the gist the first line is the name of the file
+        followed by a colon, and then the content of that file is written to the
+        terminal.
+
+    info
+        This command provides a complete dump of the information about the gist
+        as a JSON object. It is mostly useful for debugging.
 
 """
 
