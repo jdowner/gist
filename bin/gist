@@ -23,6 +23,7 @@ import fcntl
 import os
 import struct
 import sys
+import tempfile
 import termios
 
 import json
@@ -125,19 +126,23 @@ def main(argv=sys.argv[1:]):
 
     if args['create']:
         if sys.stdin.isatty():
-            files = {os.path.basename(f): {'content': open(f).read()} for f in args['FILES']}
+            if args['FILES']:
+                files = {os.path.basename(f): open(f).read() for f in args['FILES']}
+            else:
+                with tempfile.NamedTemporaryFile() as fp:
+                    os.system('${{EDITOR}} {}'.format(fp.name))
+                    fp.flush()
+                    fp.seek(0)
+                    files = {'file1.txt': fp.read()}
+
         else:
-            content = sys.stdin.read()
-            files = {
-                    'file1.txt': {
-                        'content': content,
-                        }
-                    }
+            files = {'file1.txt': sys.stdin.read()}
 
         description = args['<desc>']
         public = args['--public']
+        data = {k: {'content': v} for k, v in files.items()}
 
-        print(gist.create(description, files, public))
+        print(gist.create(description, data, public))
 
 
 if __name__ == "__main__":
