@@ -40,6 +40,11 @@ file should take the form,
 ::
   [gist]
   token: <enter token here>
+  editor: <path to editor>
+
+The editor field is optional. If the default editor is specified through some
+other mechanism 'gist' will try to infer it. Otherwise, you can use the config
+file to ensure that 'gist' uses the editor you want it to use.
 
 
 Usage
