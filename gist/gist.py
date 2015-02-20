@@ -181,23 +181,6 @@ class GistAPI(object):
         self.send(request, id)
 
     @authenticate.get
-    def clone(self, request, id, name=None):
-        """Clone a gist
-
-        Arguments:
-            request: an initial request object
-            id:      the gist identifier
-            name:    the name to give the cloned repo
-
-        """
-        response = self.send(request, id).json()
-
-        if name is None:
-            os.system('git clone {}'.format(response['git_pull_url']))
-        else:
-            os.system('git clone {} {}'.format(response['git_pull_url'], name))
-
-    @authenticate.get
     def info(self, request, id):
         """Returns info about a given gist
 
@@ -292,3 +275,18 @@ class GistAPI(object):
 
             finally:
                 shutil.rmtree(id)
+
+    def clone(self, id, name=None):
+        """Clone a gist
+
+        Arguments:
+            id:   the gist identifier
+            name: the name to give the cloned repo
+
+        """
+        url = 'git@gist.github.com:/{}'.format(id)
+
+        if name is None:
+            os.system('git clone {}'.format(url))
+        else:
+            os.system('git clone {} {}'.format(url, name))
