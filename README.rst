@@ -65,7 +65,7 @@ can create the gist.
 
 If you have a set of existing files that you want to turn into a gist,
 ::
-  $ git create "divide et impera" foo.txt bar.txt
+  $ gist create "divide et impera" foo.txt bar.txt
 
 where the quoted string is the description of the gist. Or, you may find it
 useful to create a gist from content on your clipboard (say, using xclip),
