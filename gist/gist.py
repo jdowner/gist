@@ -171,7 +171,7 @@ class GistAPI(object):
         self.send(request, id)
 
     @authenticate.get
-    def clone(self, request, id, name=''):
+    def clone(self, request, id, name=None):
         """Clone a gist
 
         Arguments:
@@ -181,7 +181,11 @@ class GistAPI(object):
 
         """
         response = self.send(request, id).json()
-        os.system('git clone {} {}'.format(response['git_pull_url'], name))
+
+        if name is None:
+            os.system('git clone {}'.format(response['git_pull_url']))
+        else:
+            os.system('git clone {} {}'.format(response['git_pull_url'], name))
 
     @authenticate.get
     def info(self, request, id):
