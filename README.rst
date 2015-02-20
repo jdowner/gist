@@ -46,37 +46,111 @@ Usage
 'gist' is intended to make it easy to manage and use github gists from the
 command line. There are several commands available::
 
+  gist create  - creates a new gist
   gist edit    - edit the files in your gist
   gist list    - prints a list of your gists
-  gist info    - prints detailed information about a gist
-  gist files   - prints a list of the files in a gist
+  gist clone   - clones a gist
   gist delete  - deletes a gist from github
+  gist files   - prints a list of the files in a gist
   gist archive - downloads a gist and creates a tarball
   gist content - prints the content of the gist to stdout
-  gist create  - creates a new gist
-  gist clone   - clones a gist
+  gist info    - prints detailed information about a gist
 
-The commands do exactly what they state, but 'gist create' is a little more
-interesting than the rest. It is possible to use it to create a gist from a set
-of files,
+
+**gist create**
+
+Most of the 'gist' commands are pretty simple and limited in what they can do.
+'gist create' is a little different and offers more flexibility in how the user
+can create the gist.
+
+If you have a set of existing files that you want to turn into a gist,
 ::
   $ git create "divide et impera" foo.txt bar.txt
 
-but often it is useful to create a gist from data that may be on the
-clipboard,
+where the quoted string is the description of the gist. Or, you may find it
+useful to create a gist from content on your clipboard (say, using xclip),
 ::
   $ xclip -o | gist create "ipsa scientia potestas est"
 
-or, perhaps, you want to create some quick notes and put them in a gist,
+Another option is to pipe the input into 'gist create' and have it automatically
+put the content on github,
 ::
   $ echo $(cat) | gist create "credo quia absurdum est"
 
+Finally, you can just call,
+::
+  $ gist create "a posse ad esse"
 
-You can also edit your gists directly with the 'edit' command. This command will
-clone the gist to a temporary directory and open up the default editor (defined by
-the EDITOR environment variable) to edit the files in the gist. When the editor
-is exited the user is prompted to commit the changes, which are then pushed back
-to the remote.
+which will launch your default editor (defined by the EDITOR environment
+variable).
+
+
+**gist edit**
+
+You can edit your gists directly with the 'edit' command. This command will
+clone the gist to a temporary directory and open up the default editor (defined
+by the EDITOR environment variable) to edit the files in the gist. When the
+editor is exited the user is prompted to commit the changes, which are then
+pushed back to the remote.
+
+
+**gist list**
+
+Returns a list of your gists. The gists are returned as,
+::
+  2b1823252e8433ef8682 - mathematical divagations
+  a485ee9ddf6828d697be - notes on defenestration
+  589071c7a02b1823252e + abecedarian pericombobulations
+
+The first column is the gists unique identifier; The second column indicates
+whether the gist is public ('+') or private ('-'); The third column is the
+description in the gist, which may be empty.
+
+
+**gist clone**
+
+Clones a gist to the current directory. This command will clone any gist based
+on its unique identifier (i.e. not just the users) to the current directory.
+
+
+**gist delete**
+
+Deletes the specified gist.
+
+
+**gist files**
+
+Returns a list of the files in the specified gist.
+
+
+**gist archive**
+
+Downloads the specified gist to a temporary directory and adds it to a tarball,
+which is then moved to the current directory.
+
+
+**gist content**
+
+Writes the content of each file in the specified gist to the terminal, e.g.
+::
+  $ gist content c971fca7997aed65ddc9
+  foo.txt:
+  this is foo
+
+
+  bar.txt:
+  this is bar
+
+
+For each file in the gist the first line is the name of the file followed by a
+colon, and then the content of that file is written to the terminal.
+
+
+**gist info**
+
+This command provides a complete dump of the information about the gist as a
+JSON object. It is mostly useful for debugging.
+
 
 
 Dependencies
