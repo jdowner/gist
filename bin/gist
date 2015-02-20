@@ -147,6 +147,47 @@ def elide(txt, width=terminal_width()):
     return txt
 
 
+def alternative_editor(default):
+    """Return the path to the 'alternatives' editor
+
+    Argument:
+        default: the default to use if the alternatives editor cannot be found.
+
+    """
+    if os.path.exists('/usr/bin/editor'):
+        return '/usr/bin/editor'
+
+    return default
+
+
+def environment_editor(default):
+    """Return the user specified environment default
+
+    Argument:
+        default: the default to use if the environment variable contains nothing
+            useful.
+
+    """
+    editor = os.environ.get('EDITOR', '').strip()
+    if editor != '':
+        return editor
+
+    return default
+
+
+def configuration_editor(config, default):
+    """Return the editor in the config file
+
+    Argument:
+        default: the default to use if there is no editor in the config
+
+    """
+    try:
+        return config.get('gist', 'editor')
+    except configparser.NoOptionError:
+        return default
+
+
 def main(argv=sys.argv[1:]):
     args = docopt.docopt(__doc__, argv=argv, version='gist-v0.1.0')
 
@@ -155,7 +196,17 @@ def main(argv=sys.argv[1:]):
     with open(os.path.expanduser('~/.gist')) as fp:
         config.readfp(fp)
 
-    gist = GistAPI(token=config.get('gist', 'token'))
+    # Determine the editor to use
+    editor = None
+    editor = alternative_editor(editor)
+    editor = environment_editor(editor)
+    editor = configuration_editor(config, editor)
+
+    if editor is None:
+        raise ValueError('Unable to find an editor.')
+
+    token = config.get('gist', 'token')
+    gist = GistAPI(token=token, editor=editor)
 
     if args['list']:
         gists = gist.list()
@@ -204,7 +255,7 @@ def main(argv=sys.argv[1:]):
                 files = {os.path.basename(f): open(f).read() for f in args['FILES']}
             else:
                 with tempfile.NamedTemporaryFile() as fp:
-                    os.system('${{EDITOR}} {}'.format(fp.name))
+                    os.system('{} {}'.format(editor, fp.name))
                     fp.flush()
                     fp.seek(0)
                     files = {'file1.txt': fp.read()}
@@ -220,4 +271,9 @@ def main(argv=sys.argv[1:]):
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        sys.stderr.write('{}\n'.format(str(e)))
+        sys.stderr.flush()
+        sys.exit(1)

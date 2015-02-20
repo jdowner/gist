@@ -106,14 +106,16 @@ class GistAPI(object):
     This class defines the interface to github.
     """
 
-    def __init__(self, token):
+    def __init__(self, token, editor=None):
         """Create a GistAPI object
 
         Arguments:
             token: an authentication token
+            editor: path to the editor to use when editing a gist
 
         """
         self.token = token
+        self.editor = editor
 
     def send(self, request, stem=None):
         """Prepare and send a request
@@ -270,7 +272,7 @@ class GistAPI(object):
                 with pushd(id):
                     files = [f for f in os.listdir('.') if os.path.isfile(f)]
                     quoted = ['"{}"'.format(f) for f in files]
-                    os.system("${{EDITOR}} {}".format(' '.join(quoted)))
+                    os.system("{} {}".format(self.editor, ' '.join(quoted)))
                     os.system('git commit -av && git push')
 
             finally:
