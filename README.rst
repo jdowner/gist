@@ -6,6 +6,8 @@ GIST
 several methods for inspecting a users gists, and the ability to easily create
 them.
 
+(NB: this is not the package of the same name in available from pip.)
+
 
 Installation
 --------------------------------------------------
