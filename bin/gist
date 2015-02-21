@@ -188,12 +188,46 @@ def configuration_editor(config, default):
         return default
 
 
+def alternative_config(default):
+    """Return the path to the config file in .config directory
+
+    Argument:
+        default: the default to use if the alternatives editor cannot be found.
+
+    """
+    config_path = os.path.expanduser('~/.config/gist')
+    if os.path.isfile(config_path):
+        return config_path
+    else:
+        return default
+
+
+def environment_config(default):
+    """Return the path to the config file in XDG user config directory
+
+    Argument:
+        default: the default to use if the environment variable contains nothing
+            useful.
+
+    """
+    config = os.environ.get('XDG_DATA_HOME', '').strip()
+    if config != '':
+        config_path = os.path.join(config, 'gist')
+        if os.path.isfile(config_path):
+            return config_path
+
+    return default
+
+
 def main(argv=sys.argv[1:]):
     args = docopt.docopt(__doc__, argv=argv, version='gist-v0.1.0')
 
     # Read in the configuration file
     config = configparser.ConfigParser()
-    with open(os.path.expanduser('~/.gist')) as fp:
+    config_path = os.path.expanduser('~/.gist')
+    config_path = alternative_config(config_path)
+    config_path = environment_config(config_path)
+    with open(config_path) as fp:
         config.readfp(fp)
 
     # Determine the editor to use
