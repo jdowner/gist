@@ -35,7 +35,7 @@ completion is provided by gist.bash. To enable it, add
 
 ::
 
-  source /usr/share/gist/gist.bash
+  source /usr/local/share/gist/gist.bash
 
 to your .bashrc file. There are two alternative bash scripts available that
 provide fuzzy matching of gists via tab completion: 'gist-fzf.bash' and
