@@ -221,7 +221,7 @@ def xdg_data_config(default):
 
 
 def main(argv=sys.argv[1:]):
-    args = docopt.docopt(__doc__, argv=argv, version='gist-v0.1.0')
+    args = docopt.docopt(__doc__, argv=argv, version='gist-v0.1.10')
 
     # Read in the configuration file
     config = configparser.ConfigParser()
