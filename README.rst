@@ -47,9 +47,8 @@ Getting started
 --------------------------------------------------
 
 'gist' requires a personal access token for authentication. To create a token,
-go to https://github.com/settings/applications and generate a new token. The
-token needs to then be added to a .gist file in your home directory. The .gist
-file should take the form,
+go to https://github.com/settings/applications. The token needs to then be added
+to a 'gist' configuration file that should have the form,
 
 ::
 
@@ -60,6 +59,18 @@ file should take the form,
 The editor field is optional. If the default editor is specified through some
 other mechanism 'gist' will try to infer it. Otherwise, you can use the config
 file to ensure that 'gist' uses the editor you want it to use.
+
+The configuration file must be in one of the following,
+
+::
+
+  ${XDG_DATA_HOME}/gist
+  ${HOME}/.config/gist
+  ${HOME}/.gist
+
+If more than one of these files exist, this is also the order of preference,
+i.e. a configuration that is found in the ``${XDG_DATA_HOME}`` directory will be
+taken in preference to ``${HOME}/.config/gist``.
 
 
 Usage
@@ -79,6 +90,7 @@ command line. There are several commands available:
   gist archive - downloads a gist and creates a tarball
   gist content - prints the content of the gist to stdout
   gist info    - prints detailed information about a gist
+  gist version - prints the current version
 
 
 **gist create**
@@ -186,6 +198,11 @@ colon, and then the content of that file is written to the terminal.
 
 This command provides a complete dump of the information about the gist as a
 JSON object. It is mostly useful for debugging.
+
+
+**gist version**
+
+Simply prints the current version.
 
 
 

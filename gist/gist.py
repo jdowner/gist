@@ -1,3 +1,5 @@
+__version__ = '0.1.10'
+
 import collections
 import contextlib
 import json

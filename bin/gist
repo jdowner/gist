@@ -13,6 +13,7 @@ Usage:
     gist content <id>
     gist create <desc> [--public] [FILES ...]
     gist clone <id> [<name>]
+    gist version
 
 Description:
     This program provides a command line interface for interacting with github
@@ -89,6 +90,9 @@ Commands:
         This command provides a complete dump of the information about the gist
         as a JSON object. It is mostly useful for debugging.
 
+    version
+        Returns the current version of gist.
+
 """
 
 import docopt
@@ -101,7 +105,7 @@ import termios
 
 import json
 
-from gist import GistAPI
+import gist
 
 try:
     import configparser
@@ -192,7 +196,7 @@ def alternative_config(default):
     """Return the path to the config file in .config directory
 
     Argument:
-        default: the default to use if the alternatives editor cannot be found.
+        default: the default to use if ~/.config/gist does not exist.
 
     """
     config_path = os.path.expanduser('~/.config/gist')
@@ -202,12 +206,13 @@ def alternative_config(default):
         return default
 
 
-def environment_config(default):
+def xdg_data_config(default):
     """Return the path to the config file in XDG user config directory
 
     Argument:
-        default: the default to use if the environment variable contains nothing
-            useful.
+        default: the default to use if either the XDG_DATA_HOME environment is
+            not set, or the XDG_DATA_HOME directory does not contain a 'gist'
+            file.
 
     """
     config = os.environ.get('XDG_DATA_HOME', '').strip()
@@ -220,13 +225,13 @@ def environment_config(default):
 
 
 def main(argv=sys.argv[1:]):
-    args = docopt.docopt(__doc__, argv=argv, version='gist-v0.1.0')
+    args = docopt.docopt(__doc__, argv=argv, version='gist-v0.1.10')
 
     # Read in the configuration file
     config = configparser.ConfigParser()
     config_path = os.path.expanduser('~/.gist')
     config_path = alternative_config(config_path)
-    config_path = environment_config(config_path)
+    config_path = xdg_data_config(config_path)
     with open(config_path) as fp:
         config.readfp(fp)
 
@@ -240,10 +245,10 @@ def main(argv=sys.argv[1:]):
         raise ValueError('Unable to find an editor.')
 
     token = config.get('gist', 'token')
-    gist = GistAPI(token=token, editor=editor)
+    gapi = gist.GistAPI(token=token, editor=editor)
 
     if args['list']:
-        gists = gist.list()
+        gists = gapi.list()
         for info in gists:
             public = '+' if info.public else '-'
             desc = '' if info.desc is None else info.desc.encode('utf8')
@@ -252,35 +257,39 @@ def main(argv=sys.argv[1:]):
         return
 
     if args['info']:
-        info = gist.info(args['<id>'])
+        info = gapi.info(args['<id>'])
         print(json.dumps(info, indent=2))
         return
 
     if args['edit']:
-        info = gist.edit(args['<id>'])
+        info = gapi.edit(args['<id>'])
         return
 
     if args['clone']:
-        gist.clone(args['<id>'], args['<name>'])
+        gapi.clone(args['<id>'], args['<name>'])
         return
 
     if args['content']:
-        content = gist.content(args['<id>'])
+        content = gapi.content(args['<id>'])
         for name, lines in content.items():
             print('{}:\n{}\n'.format(name, lines))
         return
 
     if args['files']:
-        for f in gist.files(args['<id>']):
+        for f in gapi.files(args['<id>']):
             print(f)
         return
 
     if args['archive']:
-        gist.archive(args['<id>'])
+        gapi.archive(args['<id>'])
         return
 
     if args['delete']:
-        gist.delete(args['<id>'])
+        gapi.delete(args['<id>'])
+        return
+
+    if args['version']:
+        print('v{}'.format(gist.__version__))
         return
 
     if args['create']:
@@ -301,7 +310,7 @@ def main(argv=sys.argv[1:]):
         public = args['--public']
         data = {k: {'content': v} for k, v in files.items()}
 
-        print(gist.create(description, data, public))
+        print(gapi.create(description, data, public))
 
 
 if __name__ == "__main__":
