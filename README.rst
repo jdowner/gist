@@ -90,6 +90,7 @@ command line. There are several commands available:
   gist archive - downloads a gist and creates a tarball
   gist content - prints the content of the gist to stdout
   gist info    - prints detailed information about a gist
+  gist version - prints the current version
 
 
 **gist create**
@@ -197,6 +198,11 @@ colon, and then the content of that file is written to the terminal.
 
 This command provides a complete dump of the information about the gist as a
 JSON object. It is mostly useful for debugging.
+
+
+**gist version**
+
+Simply prints the current version.
 
 
 

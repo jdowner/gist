@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
 import setuptools
+import gist
 
 setuptools.setup(
         name='python-gist',
-        version='0.1.10',
+        version=gist.__version__,
         description='Manage github gists',
         license='MIT',
         long_description=(open('README.rst').read()),

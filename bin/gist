@@ -13,6 +13,7 @@ Usage:
     gist content <id>
     gist create <desc> [--public] [FILES ...]
     gist clone <id> [<name>]
+    gist version
 
 Description:
     This program provides a command line interface for interacting with github
@@ -89,6 +90,9 @@ Commands:
         This command provides a complete dump of the information about the gist
         as a JSON object. It is mostly useful for debugging.
 
+    version
+        Returns the current version of gist.
+
 """
 
 import docopt
@@ -101,7 +105,7 @@ import termios
 
 import json
 
-from gist import GistAPI
+import gist
 
 try:
     import configparser
@@ -241,10 +245,10 @@ def main(argv=sys.argv[1:]):
         raise ValueError('Unable to find an editor.')
 
     token = config.get('gist', 'token')
-    gist = GistAPI(token=token, editor=editor)
+    gapi = gist.GistAPI(token=token, editor=editor)
 
     if args['list']:
-        gists = gist.list()
+        gists = gapi.list()
         for info in gists:
             public = '+' if info.public else '-'
             desc = '' if info.desc is None else info.desc.encode('utf8')
@@ -253,35 +257,39 @@ def main(argv=sys.argv[1:]):
         return
 
     if args['info']:
-        info = gist.info(args['<id>'])
+        info = gapi.info(args['<id>'])
         print(json.dumps(info, indent=2))
         return
 
     if args['edit']:
-        info = gist.edit(args['<id>'])
+        info = gapi.edit(args['<id>'])
         return
 
     if args['clone']:
-        gist.clone(args['<id>'], args['<name>'])
+        gapi.clone(args['<id>'], args['<name>'])
         return
 
     if args['content']:
-        content = gist.content(args['<id>'])
+        content = gapi.content(args['<id>'])
         for name, lines in content.items():
             print('{}:\n{}\n'.format(name, lines))
         return
 
     if args['files']:
-        for f in gist.files(args['<id>']):
+        for f in gapi.files(args['<id>']):
             print(f)
         return
 
     if args['archive']:
-        gist.archive(args['<id>'])
+        gapi.archive(args['<id>'])
         return
 
     if args['delete']:
-        gist.delete(args['<id>'])
+        gapi.delete(args['<id>'])
+        return
+
+    if args['version']:
+        print('v{}'.format(gist.__version__))
         return
 
     if args['create']:
@@ -302,7 +310,7 @@ def main(argv=sys.argv[1:]):
         public = args['--public']
         data = {k: {'content': v} for k, v in files.items()}
 
-        print(gist.create(description, data, public))
+        print(gapi.create(description, data, public))
 
 
 if __name__ == "__main__":
