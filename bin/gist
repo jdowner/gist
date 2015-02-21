@@ -192,7 +192,7 @@ def alternative_config(default):
     """Return the path to the config file in .config directory
 
     Argument:
-        default: the default to use if the alternatives editor cannot be found.
+        default: the default to use if ~/.config/gist does not exist.
 
     """
     config_path = os.path.expanduser('~/.config/gist')
@@ -206,8 +206,9 @@ def xdg_data_config(default):
     """Return the path to the config file in XDG user config directory
 
     Argument:
-        default: the default to use if the environment variable contains nothing
-            useful.
+        default: the default to use if either the XDG_DATA_HOME environment is
+            not set, or the XDG_DATA_HOME directory does not contain a 'gist'
+            file.
 
     """
     config = os.environ.get('XDG_DATA_HOME', '').strip()
