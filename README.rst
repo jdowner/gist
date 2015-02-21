@@ -21,13 +21,16 @@ or,
   $ sudo make install
 
 This will install the python package 'gist' to the standard location for your
-system and copy the license, readme, and bash script into /usr/share/gist. The
-bash script contains a function to enable tab-completion. To enable
-tab-completion, add
+system and copy the license, readme, and some bash scripts into /usr/share/gist.
+The bash scripts contain functions that support tab-completion. Basic tab
+completion is provided by gist.bash. To enable it, add
 ::
   source /usr/share/gist/gist.bash
 
-in your .bashrc file.
+to your .bashrc file. There are two alternative bash scripts available that
+provide fuzzy matching of gists via tab completion: 'gist-fzf.bash' and
+'gist-fzsl.bash'. These scripts assume that the packages 'fzf' and 'fzsl',
+respectively, are installed on your system (see Dependencies).
 
 
 Getting started
@@ -167,3 +170,8 @@ Dependencies
 
 * requests
 * docopts
+
+Optional packages (for fuzzy matching)
+
+* fzf   (https://github.com/junegunn/fzf)
+* fzsl  (https://github.com/jsbronder/fzsl)
