@@ -202,7 +202,7 @@ def alternative_config(default):
         return default
 
 
-def environment_config(default):
+def xdg_data_config(default):
     """Return the path to the config file in XDG user config directory
 
     Argument:
@@ -226,7 +226,7 @@ def main(argv=sys.argv[1:]):
     config = configparser.ConfigParser()
     config_path = os.path.expanduser('~/.gist')
     config_path = alternative_config(config_path)
-    config_path = environment_config(config_path)
+    config_path = xdg_data_config(config_path)
     with open(config_path) as fp:
         config.readfp(fp)
 
