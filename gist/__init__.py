@@ -1,1 +1,1 @@
-from gist import GistAPI
+from .gist import GistAPI
