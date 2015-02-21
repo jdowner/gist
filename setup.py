@@ -1,22 +1,20 @@
 #!/usr/bin/env python
-"""
-"""
 
 import setuptools
 
 setuptools.setup(
-        name='gist',
-        version='0.1.0',
+        name='python-gist',
+        version='0.1.9',
         description='Manage github gists',
         license='MIT',
-        long_description=(__doc__),
+        long_description=(open('README.rst').read()),
         author='Joshua Downer',
         author_email='joshua.downer@gmail.com',
         url='http://github.com/jdowner/gist',
         keywords='gist github git',
         packages=['gist'],
         package_data={
-          '': ['*.rst', 'LICENSE'],
+          '': ['share/*', '*.rst', 'LICENSE'],
         },
         data_files=[
           ('share/gist/', [
@@ -28,6 +26,7 @@ setuptools.setup(
               ]),
         ],
         scripts=['bin/gist'],
+        install_requires=['docopt', 'requests'],
         platforms=['Unix'],
         classifiers=[
             'Development Status :: 3 - Alpha',

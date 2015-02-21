@@ -1,2 +1,5 @@
 include LICENSE
-include *.rst
+include README.rst
+include share/gist.bash
+include share/gist-fzf.bash
+include share/gist-fzsl.bash
