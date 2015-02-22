@@ -24,7 +24,8 @@ class GistInfo(collections.namedtuple('GistInfo', 'id public desc')):
 
 class authenticate(object):
     """
-    The class is used as a decorator to handle token authentication with github.
+    The class is used as a decorator to handle token authentication with
+    github.
     """
 
     def __init__(self, func, method='GET'):
@@ -96,7 +97,12 @@ class authenticate(object):
         try:
             url = 'https://api.github.com/gists'
             params = {'access_token': self.instance.token}
-            request = requests.Request(self.method, url, headers=self.headers, params=params)
+            request = requests.Request(
+                    self.method,
+                    url,
+                    headers=self.headers,
+                    params=params,
+                    )
             return self.func(self.instance, request, *args, **kwargs)
         finally:
             self.instance = None
@@ -148,7 +154,13 @@ class GistAPI(object):
         gists = self.send(request).json()
         info = []
         for gist in gists:
-            info.append(GistInfo(gist['id'], gist['public'], gist['description']))
+            info.append(
+                    GistInfo(
+                        gist['id'],
+                        gist['public'],
+                        gist['description'],
+                        )
+                    )
 
         return info
 
@@ -233,8 +245,8 @@ class GistAPI(object):
         """Create an archive of a gist
 
         The files in the gist are downloaded and added to a compressed archive
-        (tarball). If the ID of the gist was c78d925546e964b4b1df, the resulting
-        archive would be,
+        (tarball). If the ID of the gist was c78d925546e964b4b1df, the
+        resulting archive would be,
 
             c78d925546e964b4b1df.tar.gz
 
@@ -260,8 +272,8 @@ class GistAPI(object):
 
         The files in the gist a cloned to a temporary directory and passed to
         the default editor (defined by the EDITOR environmental variable). When
-        the user exits the editor, they will be provided with a prompt to commit
-        the changes, which will then be pushed to the remote.
+        the user exits the editor, they will be provided with a prompt to
+        commit the changes, which will then be pushed to the remote.
 
         Arguments:
             request: an initial request object

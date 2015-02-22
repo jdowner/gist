@@ -21,8 +21,8 @@ Description:
 
 Commands:
     create
-        Create a new gist. A gist can be created in several ways. The content of
-        the gist can be piped to the gist,
+        Create a new gist. A gist can be created in several ways. The content
+        of the gist can be piped to the gist,
 
             $ echo "this is the content" | gist create "gist description"
 
@@ -39,9 +39,9 @@ Commands:
     edit
         You can edit your gists directly with the 'edit' command. This command
         will clone the gist to a temporary directory and open up the default
-        editor (defined by the EDITOR environment variable) to edit the files in
-        the gist. When the editor is exited the user is prompted to commit the
-        changes, which are then pushed back to the remote.
+        editor (defined by the EDITOR environment variable) to edit the files
+        in the gist. When the editor is exited the user is prompted to commit
+        the changes, which are then pushed back to the remote.
 
     list
         Returns a list of your gists. The gists are returned as,
@@ -55,9 +55,9 @@ Commands:
         column is the description in the gist, which may be empty.
 
     clone
-        Clones a gist to the current directory. This command will clone any gist
-        based on its unique identifier (i.e. not just the users) to the current
-        directory.
+        Clones a gist to the current directory. This command will clone any
+        gist based on its unique identifier (i.e. not just the users) to the
+        current directory.
 
     delete
         Deletes the specified gist.
@@ -83,8 +83,8 @@ Commands:
 
 
         For each file in the gist the first line is the name of the file
-        followed by a colon, and then the content of that file is written to the
-        terminal.
+        followed by a colon, and then the content of that file is written to
+        the terminal.
 
     info
         This command provides a complete dump of the information about the gist
@@ -121,9 +121,11 @@ def terminal_width():
 
     """
     try:
-        h, w, hp, wp = struct.unpack('HHHH',
-            fcntl.ioctl(0, termios.TIOCGWINSZ,
-            struct.pack('HHHH', 0, 0, 0, 0)))
+        exitcode = fcntl.ioctl(
+                0,
+                termios.TIOCGWINSZ,
+                struct.pack('HHHH', 0, 0, 0, 0))
+        h, w, hp, wp = struct.unpack('HHHH', exitcode)
         return w
     except Exception:
         pass
@@ -168,8 +170,8 @@ def environment_editor(default):
     """Return the user specified environment default
 
     Argument:
-        default: the default to use if the environment variable contains nothing
-            useful.
+        default: the default to use if the environment variable contains
+                nothing useful.
 
     """
     editor = os.environ.get('EDITOR', '').strip()
@@ -295,7 +297,11 @@ def main(argv=sys.argv[1:]):
     if args['create']:
         if sys.stdin.isatty():
             if args['FILES']:
-                files = {os.path.basename(f): open(f).read() for f in args['FILES']}
+                files = {}
+                for path in args['FILES']:
+                    name = os.path.basename(path)
+                    content = open(path).read()
+                    files[name] = content
             else:
                 with tempfile.NamedTemporaryFile() as fp:
                     os.system('{} {}'.format(editor, fp.name))
