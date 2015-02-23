@@ -21,10 +21,10 @@ __gist() {
       COMPREPLY=( $( gist list | fzsl | cut -d" " -f1 ) )
       tput rmcup
       ;;
-    create|list)
+    create|list|fork)
       ;;
     *)
-      COMPREPLY=( $(compgen -W "edit delete create archive files content clone list info" -- $curr) )
+      COMPREPLY=( $(compgen -W "edit delete create fork archive files content clone list info" -- $curr) )
       ;;
   esac
 
