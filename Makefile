@@ -20,5 +20,8 @@ uninstall:
 	fi
 
 check:
-	$(PYTHON2) -m pep8 $(FILES) --show-source --config=config/pep8
-	$(PYTHON3) -m pep8 $(FILES) --show-source --config=config/pep8
+	$(PYTHON2) -m pep8 $(FILES) --show-source
+	$(PYTHON3) -m pep8 $(FILES) --show-source
+
+travis:
+	python -m pep8 $(FILES) --show-source
