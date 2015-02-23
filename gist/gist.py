@@ -137,6 +137,7 @@ class GistAPI(object):
 
         """
         if stem is not None:
+            assert not stem.startswith('/')
             request.url = os.path.join(request.url, stem)
         return requests.Session().send(request.prepare())
 
@@ -291,6 +292,19 @@ class GistAPI(object):
 
             finally:
                 shutil.rmtree(id)
+
+    @authenticate.post
+    def fork(self, request, id):
+        """Fork a gist
+
+        Forks an existing gist.
+
+        Arguments:
+            request: an initial request object
+            id:      the gist identifier
+
+        """
+        return self.send(request, '{}/forks'.format(id))
 
     def clone(self, id, name=None):
         """Clone a gist

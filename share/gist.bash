@@ -7,7 +7,7 @@ __gist() {
   COMPREPLY=()
 
   case ${cmd} in
-    edit|delete|archive|files|content|clone|list|info)
+    edit|delete|archive|files|content|clone|list|info|fork)
       ;;
     create)
       if (( ${COMP_CWORD} >= 2 )); then
@@ -16,7 +16,7 @@ __gist() {
       fi
       ;;
     *)
-      COMPREPLY=( $(compgen -W "edit delete create archive files content clone list info" -- $curr) )
+      COMPREPLY=( $(compgen -W "edit delete create fork archive files content clone list info" -- $curr) )
       ;;
   esac
 

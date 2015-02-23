@@ -7,6 +7,7 @@ Usage:
     gist list
     gist edit <id>
     gist info <id>
+    gist fork <id>
     gist files <id>
     gist delete <id>
     gist archive <id>
@@ -42,6 +43,9 @@ Commands:
         editor (defined by the EDITOR environment variable) to edit the files
         in the gist. When the editor is exited the user is prompted to commit
         the changes, which are then pushed back to the remote.
+
+    fork
+        Creates a fork of the specified gist.
 
     list
         Returns a list of your gists. The gists are returned as,
@@ -265,6 +269,10 @@ def main(argv=sys.argv[1:]):
 
     if args['edit']:
         info = gapi.edit(args['<id>'])
+        return
+
+    if args['fork']:
+        info = gapi.fork(args['<id>'])
         return
 
     if args['clone']:
