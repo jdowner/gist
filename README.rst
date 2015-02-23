@@ -6,6 +6,8 @@ GIST
 several methods for inspecting a users gists, and the ability to easily create
 them.
 
+.. image:: https://travis-ci.org/jdowner/gist.svg?branch=master
+    :target: https://travis-ci.org/jdowner/gist
 
 Installation
 --------------------------------------------------
