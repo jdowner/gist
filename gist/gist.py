@@ -1,5 +1,3 @@
-__version__ = '0.1.10'
-
 import collections
 import contextlib
 import json
@@ -8,6 +6,8 @@ import requests
 import shutil
 import tarfile
 import tempfile
+
+__version__ = '0.1.10'
 
 
 @contextlib.contextmanager
