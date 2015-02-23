@@ -292,6 +292,19 @@ class GistAPI(object):
             finally:
                 shutil.rmtree(id)
 
+    @authenticate.post
+    def fork(self, request, id):
+        """Fork a gist
+
+        Forks an existing gist.
+
+        Arguments:
+            request: an initial request object
+            id:      the gist identifier
+
+        """
+        return self.send(request, '{}/forks'.format(id))
+
     def clone(self, id, name=None):
         """Clone a gist
 
