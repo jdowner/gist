@@ -137,6 +137,7 @@ class GistAPI(object):
 
         """
         if stem is not None:
+            assert not stem.startswith('/')
             request.url = os.path.join(request.url, stem)
         return requests.Session().send(request.prepare())
 
