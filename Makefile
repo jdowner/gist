@@ -22,3 +22,6 @@ uninstall:
 check:
 	$(PYTHON2) -m pep8 $(FILES) --show-source
 	$(PYTHON3) -m pep8 $(FILES) --show-source
+
+travis:
+	python -m pep8 $(FILES) --show-source
