@@ -227,3 +227,13 @@ Optional packages (for fuzzy matching)
 
 * fzf   (https://github.com/junegunn/fzf)
 * fzsl  (https://github.com/jsbronder/fzsl)
+
+
+Contributions
+--------------------------------------------------
+
+Thank you to the following people for contributing to 'gist'!
+
+* Eren Inan Canpolat (https://github.com/canpolat)
+* Kaan Genç (https://github.com/SeriousBug)
+* Eric James Michael Ritz (https://github.com/ejmr)
