@@ -32,17 +32,24 @@ or,
 
 This will install the python package 'gist' to the standard location for your
 system and copy the license, readme, and some bash scripts into /usr/share/gist.
-The bash scripts contain functions that support tab-completion. Basic tab
-completion is provided by gist.bash. To enable it, add
+
+There is also tab-completion available for bash and fish shells. The scripts are
+installed in /usr/local/share/gist.
+
+There are 3 different scripts for tab-completion in bash: gist.bash,
+gist-fzf.bash, and gist-fzsl.bash. The first, provides simple tab completion and
+can be enable by adding the following to your .bashrc file,
 
 ::
 
   source /usr/local/share/gist/gist.bash
 
-to your .bashrc file. There are two alternative bash scripts available that
-provide fuzzy matching of gists via tab completion: 'gist-fzf.bash' and
-'gist-fzsl.bash'. These scripts assume that the packages 'fzf' and 'fzsl',
-respectively, are installed on your system (see Dependencies).
+The other scripts, gist-fzf.bash and fist-fzsl.bash, provide fuzzy matching of
+gists using an ncurses interface (NB: these scripts request fzf and fzsl,
+respectively, to be installed -- see Dependencies).
+
+The gist.fish script provides tab completion in the fish shell, and should be
+copied to ~/.config/fish/completions.
 
 
 Getting started
@@ -220,3 +227,13 @@ Optional packages (for fuzzy matching)
 
 * fzf   (https://github.com/junegunn/fzf)
 * fzsl  (https://github.com/jsbronder/fzsl)
+
+
+Contributions
+--------------------------------------------------
+
+Thank you to the following people for contributing to 'gist'!
+
+* Eren Inan Canpolat (https://github.com/canpolat)
+* Kaan Genç (https://github.com/SeriousBug)
+* Eric James Michael Ritz (https://github.com/ejmr)
