@@ -103,7 +103,6 @@ Commands:
 
 """
 
-import docopt
 import fcntl
 import os
 import struct
@@ -111,6 +110,7 @@ import sys
 import tempfile
 import termios
 
+import docopt
 import json
 
 import gist
