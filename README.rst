@@ -90,16 +90,17 @@ command line. There are several commands available:
 
 ::
 
-  gist create  - creates a new gist
-  gist edit    - edit the files in your gist
-  gist list    - prints a list of your gists
-  gist clone   - clones a gist
-  gist delete  - deletes a gist from github
-  gist files   - prints a list of the files in a gist
-  gist archive - downloads a gist and creates a tarball
-  gist content - prints the content of the gist to stdout
-  gist info    - prints detailed information about a gist
-  gist version - prints the current version
+  gist create      - creates a new gist
+  gist edit        - edit the files in your gist
+  gist description - updates the description of your gist
+  gist list        - prints a list of your gists
+  gist clone       - clones a gist
+  gist delete      - deletes a gist from github
+  gist files       - prints a list of the files in a gist
+  gist archive     - downloads a gist and creates a tarball
+  gist content     - prints the content of the gist to stdout
+  gist info        - prints detailed information about a gist
+  gist version     - prints the current version
 
 
 **gist create**
@@ -145,6 +146,15 @@ clone the gist to a temporary directory and open up the default editor (defined
 by the EDITOR environment variable) to edit the files in the gist. When the
 editor is exited the user is prompted to commit the changes, which are then
 pushed back to the remote.
+
+**gist description**
+
+You can update the description of your gist with the 'description' command.
+You need to supply the gist ID and the new description. For example -
+
+::
+
+  $ gist description e1f5e95a1705cbfde144 "This is a new description"
 
 
 **gist list**

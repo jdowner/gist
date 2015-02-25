@@ -6,6 +6,7 @@ Name:
 Usage:
     gist list
     gist edit <id>
+    gist description <id> <desc>
     gist info <id>
     gist fork <id>
     gist files <id>
@@ -46,6 +47,9 @@ Commands:
 
     fork
         Creates a fork of the specified gist.
+
+    description
+        Updates the description of a gist.
 
     list
         Returns a list of your gists. The gists are returned as,
@@ -268,8 +272,13 @@ def main(argv=sys.argv[1:]):
         return
 
     if args['edit']:
-        info = gapi.edit(args['<id>'])
+        gapi.edit(args['<id>'])
         return
+
+    if args['description']:
+        gist_id = args['<id>']
+        description = args['<desc>']
+        gapi.description(gist_id, description)
 
     if args['fork']:
         info = gapi.fork(args['<id>'])
