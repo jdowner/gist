@@ -9,7 +9,7 @@ __gist() {
   COMPREPLY=()
 
   case ${cmd} in
-    edit|archive|files|content|clone|info)
+    edit|description|archive|files|content|clone|info)
       if (( ${COMP_CWORD} == 2 )); then
         tput smcup
         COMPREPLY=( $( gist list | fzf | cut -d" " -f1 ) )
@@ -24,7 +24,7 @@ __gist() {
     create|list|fork)
       ;;
     *)
-      COMPREPLY=( $(compgen -W "edit delete create fork archive files content clone list info" -- $curr) )
+      COMPREPLY=( $(compgen -W "edit description delete create fork archive files content clone list info" -- $curr) )
       ;;
   esac
 

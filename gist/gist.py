@@ -67,6 +67,16 @@ class authenticate(object):
         return cls(func, method='POST')
 
     @classmethod
+    def patch(cls, func):
+        """Create an authenticate object with a PATCH method
+
+        Arguments:
+            func: a function to decorate
+
+        """
+        return cls(func, method='PATCH')
+
+    @classmethod
     def delete(cls, func):
         """Create an authenticate object with a DELETE method
 
@@ -305,6 +315,21 @@ class GistAPI(object):
 
         """
         return self.send(request, '{}/forks'.format(id))
+
+    @authenticate.patch
+    def description(self, request, id, description):
+        """Updates the description of a gist
+
+        Arguments:
+            request:     an initial request object
+            id:          the id of the gist we want to edit the description for
+            description: the new description
+
+        """
+        request.data = json.dumps({
+            "description": description
+        })
+        return self.send(request, id).json()['html_url']
 
     def clone(self, id, name=None):
         """Clone a gist
