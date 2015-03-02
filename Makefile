@@ -21,5 +21,5 @@ uninstall:
 test:
 	@cd tests && PYTHONPATH=${PYTHONPATH}:.. $(PYTHON) test_gist.py
 
-travis:
+pep8:
 	$(PYTHON) -m pep8 $(FILES) --show-source
