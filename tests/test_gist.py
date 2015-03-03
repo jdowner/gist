@@ -47,17 +47,17 @@ class TestGist(unittest.TestCase):
                 body=json.dumps({
                     "files": {
                         "file-A.txt": {
-                            "filename": "file-A.txt", 
-                            "content": "test-content-A", 
+                            "filename": "file-A.txt",
+                            "content": "test-content-A",
                             },
                         "file-B.txt": {
-                            "filename": "file-B.txt", 
-                            "content": "test-content-\u212C", 
+                            "filename": "file-B.txt",
+                            "content": "test-content-\u212C",
                             }
-                        }, 
-                    "description": "test-gist", 
+                        },
+                    "description": "test-gist",
                     "public": True,
-                    "id": 1, 
+                    "id": 1,
                     }),
                 status=200,
                 )
