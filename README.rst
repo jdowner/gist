@@ -230,8 +230,12 @@ Dependencies
 
 'gist' currently depends on,
 
-* requests
 * docopts
+* pep8
+* requests
+* responses
+* simplejson
+* tox
 
 Optional packages (for fuzzy matching)
 
