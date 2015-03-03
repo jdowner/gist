@@ -1,3 +1,6 @@
 docopt
-simplejson
+pep8
 requests
+responses
+simplejson
+tox

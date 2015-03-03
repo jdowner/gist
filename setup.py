@@ -27,7 +27,12 @@ setuptools.setup(
               ]),
         ],
         scripts=['bin/gist'],
-        install_requires=['docopt', 'requests'],
+        install_requires=[
+            'docopt',
+            'requests',
+            'responses',
+            'pep8',
+            'tox'],
         platforms=['Unix'],
         classifiers=[
             'Development Status :: 3 - Alpha',
