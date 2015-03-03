@@ -1,13 +1,12 @@
 SHELL=/bin/bash
-PYTHON2=$(shell which python2)
-PYTHON3=$(shell which python3)
 FILES=gist/gist.py bin/gist
+PYTHON=/usr/bin/env python
 
 build:
-	python setup.py build
+	$(PYTHON) setup.py build
 
 install: build
-	sudo python setup.py install \
+	sudo $(PYTHON) setup.py install \
 		--record installed-files.txt \
 		--single-version-externally-managed
 
@@ -19,9 +18,8 @@ uninstall:
 		done < "installed-files.txt"; \
 	fi
 
-check:
-	$(PYTHON2) -m pep8 $(FILES) --show-source
-	$(PYTHON3) -m pep8 $(FILES) --show-source
+test:
+	@cd tests && PYTHONPATH=${PYTHONPATH}:.. $(PYTHON) test_gist.py
 
-travis:
-	python -m pep8 $(FILES) --show-source
+pep8:
+	$(PYTHON) -m pep8 $(FILES) --show-source
