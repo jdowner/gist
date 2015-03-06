@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import base64
 import unittest
 
 import json
@@ -43,16 +44,19 @@ class TestGist(unittest.TestCase):
 
     @responses.activate
     def test_content(self):
+        def b64encode(s):
+            return base64.b64encode(s.encode('utf-8')).decode('utf-8')
+
         responses.add(responses.GET, 'https://api.github.com/gists/1',
                 body=json.dumps({
                     "files": {
                         "file-A.txt": {
                             "filename": "file-A.txt",
-                            "content": "test-content-A",
+                            "content": b64encode("test-content-A"),
                             },
                         "file-B.txt": {
                             "filename": "file-B.txt",
-                            "content": "test-content-\u212C",
+                            "content": b64encode("test-content-\u212C"),
                             }
                         },
                     "description": "test-gist",
