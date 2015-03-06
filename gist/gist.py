@@ -1,3 +1,4 @@
+import base64
 import collections
 import contextlib
 import json
@@ -42,7 +43,7 @@ class authenticate(object):
         self.headers = {
                 'Accept-Encoding': 'identity, deflate, compress, gzip',
                 'User-Agent': 'python-requests/1.2.0',
-                'Accept': '*/*',
+                'Accept': 'application/vnd.github.v3.base64',
                 }
         self.method = method
 
@@ -249,7 +250,15 @@ class GistAPI(object):
 
         """
         gist = self.send(request, id).json()
-        return {name: data['content'] for name, data in gist['files'].items()}
+
+        def convert(data):
+            return base64.b64decode(data).decode('utf-8')
+
+        content = {}
+        for name, data in gist['files'].items():
+            content[name] = convert(data['content'])
+
+        return content
 
     @authenticate.get
     def archive(self, request, id):
