@@ -112,6 +112,7 @@ import termios
 
 import docopt
 import json
+import six
 
 import gist
 
@@ -291,7 +292,7 @@ def main(argv=sys.argv[1:]):
     if args['content']:
         content = gapi.content(args['<id>'])
         for name, lines in content.items():
-            print('{}:\n{}\n'.format(name, lines))
+            print(six.u('{}:\n{}\n').format(name, lines))
         return
 
     if args['files']:
@@ -320,7 +321,7 @@ def main(argv=sys.argv[1:]):
                     content = open(path).read()
                     files[name] = content
             else:
-                with tempfile.NamedTemporaryFile() as fp:
+                with tempfile.NamedTemporaryFile('w+') as fp:
                     os.system('{} {}'.format(editor, fp.name))
                     fp.flush()
                     fp.seek(0)

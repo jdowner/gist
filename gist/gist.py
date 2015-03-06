@@ -272,7 +272,7 @@ class GistAPI(object):
 
         with tarfile.open('{}.tar.gz'.format(id), mode='w:gz') as archive:
             for name, data in gist['files'].items():
-                with tempfile.NamedTemporaryFile() as fp:
+                with tempfile.NamedTemporaryFile('w+') as fp:
                     fp.write(data['content'])
                     fp.flush()
                     archive.add(fp.name, arcname=name)
