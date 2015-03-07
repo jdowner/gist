@@ -3,4 +3,5 @@ pep8
 requests
 responses
 simplejson
+six
 tox

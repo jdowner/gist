@@ -1,14 +1,14 @@
 import base64
 import collections
 import contextlib
-import json
+import simplejson as json
 import os
 import requests
 import shutil
 import tarfile
 import tempfile
 
-__version__ = '0.1.10'
+__version__ = '0.1.11'
 
 
 @contextlib.contextmanager
