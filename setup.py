@@ -29,10 +29,13 @@ setuptools.setup(
         scripts=['bin/gist'],
         install_requires=[
             'docopt',
+            'pep8',
             'requests',
             'responses',
-            'pep8',
-            'tox'],
+            'simplejson',
+            'six',
+            'tox',
+            ],
         platforms=['Unix'],
         classifiers=[
             'Development Status :: 3 - Alpha',

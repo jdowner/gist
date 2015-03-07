@@ -112,7 +112,7 @@ import tempfile
 import termios
 
 import docopt
-import json
+import simplejson as json
 import six
 
 import gist

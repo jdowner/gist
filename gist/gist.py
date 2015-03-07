@@ -1,7 +1,7 @@
 import base64
 import collections
 import contextlib
-import json
+import simplejson as json
 import os
 import requests
 import shutil
