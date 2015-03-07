@@ -103,15 +103,17 @@ Commands:
 
 """
 
-import docopt
 import fcntl
+import logging
 import os
 import struct
 import sys
 import tempfile
 import termios
 
+import docopt
 import json
+import six
 
 import gist
 
@@ -119,6 +121,9 @@ try:
     import configparser
 except ImportError:
     import ConfigParser as configparser
+
+
+logger = logging.getLogger('gist')
 
 
 def terminal_width():
@@ -245,6 +250,14 @@ def main(argv=sys.argv[1:]):
     with open(config_path) as fp:
         config.readfp(fp)
 
+    # Setup logging
+    try:
+        logging.basicConfig(format="%(created).3f %(levelname)s %(message)s")
+        log_level = config.get('gist', 'log-level').upper()
+        logging.getLogger().setLevel(log_level)
+    except Exception:
+        logging.getLogger().setLevel(logging.ERROR)
+
     # Determine the editor to use
     editor = None
     editor = alternative_editor(editor)
@@ -291,7 +304,7 @@ def main(argv=sys.argv[1:]):
     if args['content']:
         content = gapi.content(args['<id>'])
         for name, lines in content.items():
-            print('{}:\n{}\n'.format(name, lines))
+            print(six.u('{}:\n{}\n').format(name, lines))
         return
 
     if args['files']:
@@ -320,7 +333,7 @@ def main(argv=sys.argv[1:]):
                     content = open(path).read()
                     files[name] = content
             else:
-                with tempfile.NamedTemporaryFile() as fp:
+                with tempfile.NamedTemporaryFile('w+') as fp:
                     os.system('{} {}'.format(editor, fp.name))
                     fp.flush()
                     fp.seek(0)
@@ -340,6 +353,5 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        sys.stderr.write('{}\n'.format(str(e)))
-        sys.stderr.flush()
+        logger.error(str(e))
         sys.exit(1)
