@@ -8,7 +8,7 @@ import shutil
 import tarfile
 import tempfile
 
-__version__ = '0.1.10'
+__version__ = '0.1.11'
 
 
 @contextlib.contextmanager
