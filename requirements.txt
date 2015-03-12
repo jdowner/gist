@@ -1,4 +1,5 @@
 docopt
+python-gnupg
 pep8
 requests
 responses
