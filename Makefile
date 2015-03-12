@@ -23,3 +23,6 @@ test:
 
 pep8:
 	$(PYTHON) -m pep8 $(FILES) --show-source
+
+tox:
+	tox --skip-missing-interpreters --develop
