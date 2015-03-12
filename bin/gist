@@ -280,7 +280,7 @@ def main(argv=sys.argv[1:], config=None):
         for info in gists:
             public = '+' if info.public else '-'
             desc = '' if info.desc is None else info.desc
-            line = '{} {} {}'.format(info.id, public, desc)
+            line = u'{} {} {}'.format(info.id, public, desc)
             print(elide(line))
         return
 
