@@ -126,6 +126,12 @@ except ImportError:
 logger = logging.getLogger('gist')
 
 
+class GistError(Exception):
+    def __init__(self, msg):
+        super(GistError, self).__init__(msg)
+        self.msg = msg
+
+
 def terminal_width():
     """Returns the terminal width
 
@@ -357,6 +363,10 @@ def main(argv=sys.argv[1:], config=None):
 if __name__ == "__main__":
     try:
         main()
+    except GistError as e:
+        sys.stderr.write(u"GIST: {}\n".format(e.msg))
+        sys.stderr.flush()
+        sys.exit(1)
     except Exception as e:
         logger.error(str(e))
         sys.exit(1)
