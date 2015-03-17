@@ -54,3 +54,4 @@ docs/_build/
 target/
 installed-files.txt
 bin/gistc
+tests/gnupg/*
