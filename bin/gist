@@ -12,8 +12,8 @@ Usage:
     gist files <id>
     gist delete <id>
     gist archive <id>
-    gist content <id>
-    gist create <desc> [--public] [FILES ...]
+    gist content <id> [--decrypt]
+    gist create <desc> [--public] [--encrypt] [FILES ...]
     gist clone <id> [<name>]
     gist version
 
@@ -112,6 +112,7 @@ import tempfile
 import termios
 
 import docopt
+import gnupg
 import simplejson as json
 import six
 
@@ -314,8 +315,21 @@ def main(argv=sys.argv[1:], config=None):
 
     if args['content']:
         content = gapi.content(args['<id>'])
-        for name, lines in content.items():
-            print(six.u('{}:\n{}\n').format(name, lines))
+        if args['--decrypt']:
+            if not config.has_option('gist', 'gnupg-homedir'):
+                raise GistError('gnupg-homedir missing from config file')
+
+            homedir = config.get('gist', 'gnupg-homedir')
+            gpg = gnupg.GPG(homedir=homedir)
+
+            for name, lines in content.items():
+                lines = six.u(gpg.decrypt(lines).data)
+                print(six.u('{} (decrypted):\n{}\n').format(name, lines))
+
+        else:
+            for name, lines in content.items():
+                print(six.u('{}:\n{}\n').format(name, lines))
+
         return
 
     if args['files']:
@@ -336,28 +350,59 @@ def main(argv=sys.argv[1:], config=None):
         return
 
     if args['create']:
+        logger.debug('action: create')
+
+        # If encryption is selected, perform an initial check to make sure that
+        # it is possible before processing any data.
+        if args['--encrypt']:
+            if not config.has_option('gist', 'gnupg-homedir'):
+                raise GistError('gnupg-homedir missing from config file')
+
+            if not config.has_option('gist', 'gnupg-fingerprint'):
+                raise GistError('gnupg-fingerprint missing from config file')
+
+        # Retrieve the data to add to the gist
         if sys.stdin.isatty():
             if args['FILES']:
+                logger.debug('action: - reading from files')
                 files = {}
                 for path in args['FILES']:
                     name = os.path.basename(path)
-                    content = open(path).read()
-                    files[name] = content
+                    with open(path, 'rb') as fp:
+                        files[name] = fp.read().decode('utf-8')
             else:
-                with tempfile.NamedTemporaryFile('w+') as fp:
+                logger.debug('action: - reading from editor')
+                with tempfile.NamedTemporaryFile('wb') as fp:
                     os.system('{} {}'.format(editor, fp.name))
                     fp.flush()
                     fp.seek(0)
-                    files = {'file1.txt': fp.read()}
+                    files = {'file1.txt': fp.read().decode('utf-8')}
 
         else:
+            logger.debug('action: - reading from stdin')
             files = {'file1.txt': sys.stdin.read()}
 
         description = args['<desc>']
         public = args['--public']
-        data = {k: {'content': v} for k, v in files.items()}
+
+        # Encrypt the files or leave them unmodified
+        if args['--encrypt']:
+            logger.debug('action: - encrypting content')
+
+            fingerprint = config.get('gist', 'gnupg-fingerprint')
+            gnupghome = config.get('gist', 'gnupg-homedir')
+
+            gpg = gnupg.GPG(gnupghome=gnupghome, use_agent=True)
+            data = {}
+            for k, v in files.items():
+                cypher = gpg.encrypt(v.encode('utf-8'), fingerprint)
+                content = cypher.data.decode('utf-8')
+                data['{}.asc'.format(k)] = {'content': content}
+        else:
+            data = {k: {'content': v} for k, v in files.items()}
 
         print(gapi.create(description, data, public))
+        return
 
 
 if __name__ == "__main__":
