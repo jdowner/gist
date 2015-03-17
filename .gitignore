@@ -53,3 +53,5 @@ docs/_build/
 # PyBuilder
 target/
 installed-files.txt
+bin/gistc
+tests/gnupg/*

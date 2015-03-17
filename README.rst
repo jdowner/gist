@@ -138,6 +138,19 @@ Finally, you can just call,
 which will launch your default editor (defined by the EDITOR environment
 variable).
 
+In addition to creating gists using the above methods, it is also possible to
+encrypt a gist if you have gnupg installed. Any of the above methods can be used
+to create encrypted gists by simply adding the --encrypt flag to invocation.
+For example,
+
+::
+
+  $ gist create "arcana imperii" --encrypt
+
+will open the editor allowing you to create the content of the gist, which is
+then encrypted and added to github. See the Configuration section for
+information on how to enable gnupg support.
+
 
 **gist edit**
 
@@ -212,6 +225,18 @@ Writes the content of each file in the specified gist to the terminal, e.g.
 For each file in the gist the first line is the name of the file followed by a
 colon, and then the content of that file is written to the terminal.
 
+If the contents of the gist is encrypted, it can be viewed in its decrypted
+form by adding the --decrypt flag, e.g.
+
+::
+
+  $ gist content --decrypt 8fe557fb3771aa74edfd
+  foo.txt.asc (decrypted):
+  this is a secret
+
+
+See the Configuration section for information on how to enable gnupg support.
+
 
 **gist info**
 
@@ -224,6 +249,37 @@ JSON object. It is mostly useful for debugging.
 Simply prints the current version.
 
 
+Configuration
+--------------------------------------------------
+
+There are several parameters that can be added to a configuration file to
+determine the behavior of gist. The configuration file itself is expected to
+be one of the following paths,
+
+::
+
+  ${HOME}/.gist
+  ${HOME}/.config/gist
+  ${XDG_DATA_HOME}/gist
+
+The configuration file follows the .ini style. The following is an example,
+
+::
+
+  [gist]
+  token: dde7b84d1e0edf7454ab354934b6ab36b01bf00f
+  editor: /usr/bin/vim
+  gnupg-homedir: /home/user/.gnupg
+  gnupg-fingerprint: 179F9650D9FC1BFE391620B4B13A7829D8DE8623
+
+The only essential field in the configuration file is the token. This is the
+authentication token from github that grants gist permission to access your
+gists. The editor is the editor to use if the EDITOR environment is not set or
+you wish to use a different editor. 'gnupg-homedir' is the directory where your
+gnupg data are stored, and 'gnupg-fingerprint' is the fingerprint of the key to
+use to encrypt data in your gists. Both gnupg fields are required to support
+encryption/decryption.
+
 
 Dependencies
 --------------------------------------------------
@@ -232,10 +288,10 @@ Dependencies
 
 * docopts
 * pep8
+* python-gnupg
 * requests
 * responses
 * simplejson
-* six
 * tox
 
 Optional packages (for fuzzy matching)

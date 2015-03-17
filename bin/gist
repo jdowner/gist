@@ -12,8 +12,8 @@ Usage:
     gist files <id>
     gist delete <id>
     gist archive <id>
-    gist content <id>
-    gist create <desc> [--public] [FILES ...]
+    gist content <id> [--decrypt]
+    gist create <desc> [--public] [--encrypt] [FILES ...]
     gist clone <id> [<name>]
     gist version
 
@@ -112,8 +112,8 @@ import tempfile
 import termios
 
 import docopt
+import gnupg
 import simplejson as json
-import six
 
 import gist
 
@@ -124,6 +124,12 @@ except ImportError:
 
 
 logger = logging.getLogger('gist')
+
+
+class GistError(Exception):
+    def __init__(self, msg):
+        super(GistError, self).__init__(msg)
+        self.msg = msg
 
 
 def terminal_width():
@@ -239,24 +245,30 @@ def xdg_data_config(default):
     return default
 
 
-def main(argv=sys.argv[1:]):
-    args = docopt.docopt(__doc__, argv=argv, version='gist-v0.1.10')
+def main(argv=sys.argv[1:], config=None):
+    args = docopt.docopt(
+            __doc__,
+            argv=argv,
+            version='gist-v{}'.format(gist.__version__),
+            )
 
     # Read in the configuration file
-    config = configparser.ConfigParser()
-    config_path = os.path.expanduser('~/.gist')
-    config_path = alternative_config(config_path)
-    config_path = xdg_data_config(config_path)
-    with open(config_path) as fp:
-        config.readfp(fp)
+    if config is None:
+        config = configparser.ConfigParser()
+        config_path = os.path.expanduser('~/.gist')
+        config_path = alternative_config(config_path)
+        config_path = xdg_data_config(config_path)
+        with open(config_path) as fp:
+            config.readfp(fp)
 
     # Setup logging
     try:
-        logging.basicConfig(format="%(created).3f %(levelname)s %(message)s")
+        fmt = "%(created).3f %(levelname)s[%(name)s] %(message)s"
         log_level = config.get('gist', 'log-level').upper()
-        logging.getLogger().setLevel(log_level)
+        logging.basicConfig(format=fmt)
+        logging.getLogger('gist').setLevel(log_level)
     except Exception:
-        logging.getLogger().setLevel(logging.ERROR)
+        logging.getLogger('gist').setLevel(logging.ERROR)
 
     # Determine the editor to use
     editor = None
@@ -271,87 +283,171 @@ def main(argv=sys.argv[1:]):
     gapi = gist.GistAPI(token=token, editor=editor)
 
     if args['list']:
+        gist_id = args['<id>']
+        logger.debug(u'action: list')
+        logger.debug(u'action: - {}'.format(gist_id))
         gists = gapi.list()
         for info in gists:
             public = '+' if info.public else '-'
-            desc = '' if info.desc is None else info.desc.encode('utf8')
-            line = '{} {} {}'.format(info.id, public, desc)
+            desc = '' if info.desc is None else info.desc
+            line = u'{} {} {}'.format(info.id, public, desc)
             print(elide(line))
         return
 
     if args['info']:
-        info = gapi.info(args['<id>'])
+        gist_id = args['<id>']
+        logger.debug(u'action: info')
+        logger.debug(u'action: - {}'.format(gist_id))
+        info = gapi.info(gist_id)
         print(json.dumps(info, indent=2))
         return
 
     if args['edit']:
-        gapi.edit(args['<id>'])
+        gist_id = args['<id>']
+        logger.debug(u'action: edit')
+        logger.debug(u'action: - {}'.format(gist_id))
+        gapi.edit(gist_id)
         return
 
     if args['description']:
         gist_id = args['<id>']
         description = args['<desc>']
+        logger.debug(u'action: description')
+        logger.debug(u'action: - {}'.format(gist_id))
+        logger.debug(u'action: - {}'.format(description))
         gapi.description(gist_id, description)
+        return
 
     if args['fork']:
-        info = gapi.fork(args['<id>'])
+        gist_id = args['<id>']
+        logger.debug(u'action: fork')
+        logger.debug(u'action: - {}'.format(gist_id))
+        info = gapi.fork(gist_id)
         return
 
     if args['clone']:
-        gapi.clone(args['<id>'], args['<name>'])
+        gist_id = args['<id>']
+        gist_name = args['<name>']
+        logger.debug(u'action: clone')
+        logger.debug(u'action: - {} as {}'.format(gist_id, gist_name))
+        gapi.clone(gist_id, gist_name)
         return
 
     if args['content']:
-        content = gapi.content(args['<id>'])
-        for name, lines in content.items():
-            print(six.u('{}:\n{}\n').format(name, lines))
+        gist_id = args['<id>']
+        logger.debug(u'action: content')
+        logger.debug(u'action: - {}'.format(gist_id))
+
+        content = gapi.content(gist_id)
+        if args['--decrypt']:
+            if not config.has_option('gist', 'gnupg-homedir'):
+                raise GistError('gnupg-homedir missing from config file')
+
+            homedir = config.get('gist', 'gnupg-homedir')
+            logger.debug(u'action: - {}'.format(homedir))
+
+            gpg = gnupg.GPG(gnupghome=homedir, use_agent=True)
+
+            for name, lines in content.items():
+                lines = gpg.decrypt(lines).data.decode('utf-8')
+                print(u'{} (decrypted):\n{}\n'.format(name, lines))
+
+        else:
+            for name, lines in content.items():
+                print(u'{}:\n{}\n'.format(name, lines))
+
         return
 
     if args['files']:
-        for f in gapi.files(args['<id>']):
+        gist_id = args['<id>']
+        logger.debug(u'action: files')
+        logger.debug(u'action: - {}'.format(gist_id))
+        for f in gapi.files(gist_id):
             print(f)
         return
 
     if args['archive']:
-        gapi.archive(args['<id>'])
+        gist_id = args['<id>']
+        logger.debug(u'action: archive')
+        logger.debug(u'action: - {}'.format(gist_id))
+        gapi.archive(gist_id)
         return
 
     if args['delete']:
-        gapi.delete(args['<id>'])
+        gist_id = args['<id>']
+        logger.debug(u'action: delete')
+        logger.debug(u'action: - {}'.format(gist_id))
+        gapi.delete(gist_id)
         return
 
     if args['version']:
+        logger.debug(u'action: version')
         print('v{}'.format(gist.__version__))
         return
 
     if args['create']:
+        logger.debug('action: create')
+
+        # If encryption is selected, perform an initial check to make sure that
+        # it is possible before processing any data.
+        if args['--encrypt']:
+            if not config.has_option('gist', 'gnupg-homedir'):
+                raise GistError('gnupg-homedir missing from config file')
+
+            if not config.has_option('gist', 'gnupg-fingerprint'):
+                raise GistError('gnupg-fingerprint missing from config file')
+
+        # Retrieve the data to add to the gist
         if sys.stdin.isatty():
             if args['FILES']:
+                logger.debug('action: - reading from files')
                 files = {}
                 for path in args['FILES']:
                     name = os.path.basename(path)
-                    content = open(path).read()
-                    files[name] = content
+                    with open(path, 'rb') as fp:
+                        files[name] = fp.read().decode('utf-8')
             else:
-                with tempfile.NamedTemporaryFile('w+') as fp:
+                logger.debug('action: - reading from editor')
+                with tempfile.NamedTemporaryFile('wb') as fp:
                     os.system('{} {}'.format(editor, fp.name))
                     fp.flush()
                     fp.seek(0)
-                    files = {'file1.txt': fp.read()}
+                    files = {'file1.txt': fp.read().decode('utf-8')}
 
         else:
+            logger.debug('action: - reading from stdin')
             files = {'file1.txt': sys.stdin.read()}
 
         description = args['<desc>']
         public = args['--public']
-        data = {k: {'content': v} for k, v in files.items()}
+
+        # Encrypt the files or leave them unmodified
+        if args['--encrypt']:
+            logger.debug('action: - encrypting content')
+
+            fingerprint = config.get('gist', 'gnupg-fingerprint')
+            gnupghome = config.get('gist', 'gnupg-homedir')
+
+            gpg = gnupg.GPG(gnupghome=gnupghome, use_agent=True)
+            data = {}
+            for k, v in files.items():
+                cypher = gpg.encrypt(v.encode('utf-8'), fingerprint)
+                content = cypher.data.decode('utf-8')
+                data['{}.asc'.format(k)] = {'content': content}
+        else:
+            data = {k: {'content': v} for k, v in files.items()}
 
         print(gapi.create(description, data, public))
+        return
 
 
 if __name__ == "__main__":
     try:
         main()
+    except GistError as e:
+        sys.stderr.write(u"GIST: {}\n".format(e.msg))
+        sys.stderr.flush()
+        sys.exit(1)
     except Exception as e:
         logger.error(str(e))
         sys.exit(1)
