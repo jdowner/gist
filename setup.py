@@ -3,6 +3,14 @@
 import setuptools
 import gist
 
+def dependencies():
+    packages = ['tox']
+    with open("requirements.txt") as fp:
+        packages.extend(line for line in fp.readlines() if line)
+
+    return packages
+
+
 setuptools.setup(
         name='python-gist',
         version=gist.__version__,
@@ -27,15 +35,7 @@ setuptools.setup(
               ]),
         ],
         scripts=['bin/gist'],
-        install_requires=[
-            'docopt',
-            'pep8',
-            'requests',
-            'responses',
-            'simplejson',
-            'six',
-            'tox',
-            ],
+        install_requires=dependencies(),
         platforms=['Unix'],
         classifiers=[
             'Development Status :: 3 - Alpha',
