@@ -3,9 +3,12 @@
 
 import base64
 import contextlib
+import gnupg
 import imp
+import os
 import shlex
 import sys
+import tempfile
 import unittest
 
 try:
@@ -23,6 +26,7 @@ import responses
 
 import gist
 
+
 # import the CLI script as a module of gist
 setattr(gist, 'cli', imp.load_source('cli', '../bin/gist'))
 
@@ -34,6 +38,19 @@ def redirect_stdout(buf):
     yield
     sys.stdout = original
 
+
+def b64encode(s):
+    """Return the base64 encoding of a string
+
+    To support string encodings other than ascii, the content of a gist needs
+    to be uploaded in base64. Because python2.x and python3.x handle string
+    differently, it is necessary to be explicit about passing a string into
+    b64encode as bytes. This function handles the encoding of the string into
+    bytes, and then decodes the resulting bytes into a UTF-8 string, which is
+    returned.
+
+    """
+    return base64.b64encode(s.encode('utf-8')).decode('utf-8')
 
 
 class TestGist(unittest.TestCase):
@@ -70,9 +87,6 @@ class TestGist(unittest.TestCase):
 
     @responses.activate
     def test_content(self):
-        def b64encode(s):
-            return base64.b64encode(s.encode('utf-8')).decode('utf-8')
-
         responses.add(responses.GET, 'https://api.github.com/gists/1',
                 body=json.dumps({
                     "files": {
@@ -204,6 +218,126 @@ class TestGistCLI(unittest.TestCase):
         self.assertIn('test-content-A', lines)
         self.assertIn('file-B.txt:', lines)
         self.assertIn('test-content-\u212C', lines)
+
+
+class TestGistGPG(unittest.TestCase):
+    def setUp(self):
+        self.gnupghome = os.path.abspath('./gnupg')
+        self.gpg = gnupg.GPG(gnupghome=self.gnupghome, use_agent=True)
+        self.fingerprint = self.gpg.list_keys()[0]['fingerprint']
+
+        self.config = configparser.ConfigParser()
+        self.config.add_section('gist')
+        self.config.set('gist', 'token', 'foo')
+        self.config.set('gist', 'gnupg-homedir', self.gnupghome)
+        self.config.set('gist', 'gnupg-fingerprint', self.fingerprint)
+
+    def command_response(self, cmd):
+        """Return stdout produce by the specified CLI command"""
+        buf = StringIO()
+        with redirect_stdout(buf):
+            gist.cli.main(argv=shlex.split(cmd), config=self.config)
+
+        return buf.getvalue().splitlines()
+
+    def encrypt(self, text):
+        """Return the text as an encrypted string"""
+        data = text.encode('utf-8')
+        crypt = self.gpg.encrypt(data, self.fingerprint)
+        return crypt.data.decode('utf-8')
+
+    def decrypt(self, text):
+        """Return the text as a decrypted string"""
+        data = text.encode('utf-8')
+        crypt = self.gpg.decrypt(data)
+        return crypt.data.decode('utf-8')
+
+    @responses.activate
+    def test_create_from_file(self):
+        """
+        This test checks that the content from a gist created from a file is
+        properly encrypted.
+
+        """
+        def request_handler(request):
+            # Decrypt the content of the request and check that it matches the
+            # original content.
+            body = json.loads(request.body)
+            data = list(body['files'].values())
+            text = self.decrypt(data[0]['content'])
+            self.assertIn(u'test-content-\u212C', text)
+
+            status = 200
+            headers = {}
+            body = json.dumps({
+                'html_url': 'https://gist.github.com/gists/1'
+                })
+            return status, headers, body
+
+        responses.add_callback(
+                responses.POST,
+                'https://api.github.com/gists',
+                callback=request_handler,
+                content_type='application/json',
+                )
+
+        # Create a temporary file and write a test message to it
+        with tempfile.NamedTemporaryFile("wb") as fp:
+            text = u"test-content-\u212C"
+            fp.write(text.encode('utf-8'))
+            fp.flush()
+
+            cmd = 'create --encrypt "test-desc" {}'.format(fp.name)
+            self.command_response(cmd)
+
+    @responses.activate
+    def test_content(self):
+        """
+        When encrypted content is received, check to make sure that it can be
+        properly decrypted.
+
+        """
+        def b64encrypt(content):
+            return b64encode(self.encrypt(content))
+
+        responses.add(responses.GET, 'https://api.github.com/gists/1',
+                body=json.dumps({
+                    "files": {
+                        "file-A.txt": {
+                            "filename": "file-A.txt",
+                            "content": b64encrypt(u'test-content-A'),
+                            },
+                        "file-B.txt": {
+                            "filename": "file-B.txt",
+                            "content": b64encrypt(u'test-content-\u212C'),
+                            },
+                        },
+                    "description": "test-gist",
+                    "public": True,
+                    "id": 1,
+                    }),
+                status=200,
+                )
+
+        lines = self.command_response('content 1 --decrypt')
+
+        self.assertIn(u'file-A.txt (decrypted):', lines)
+        self.assertIn(u'test-content-A', lines)
+        self.assertIn(u'file-B.txt (decrypted):', lines)
+        self.assertIn(u'test-content-\u212C', lines)
+
+    def test_gnupg(self):
+        """
+        Make sure that the basic mechanism put in place for testing the
+        encryption used in gist works as expected.
+
+        """
+        text = u"this is a message \u212C"
+        cypher = self.encrypt(text)
+        plain = self.decrypt(cypher)
+
+        self.assertNotEqual(text, cypher)
+        self.assertEqual(text, plain)
 
 
 if __name__ == "__main__":
