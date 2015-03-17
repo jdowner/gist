@@ -264,11 +264,12 @@ def main(argv=sys.argv[1:], config=None):
 
     # Setup logging
     try:
-        logging.basicConfig(format="%(created).3f %(levelname)s %(message)s")
+        fmt = "%(created).3f %(levelname)s[%(name)s] %(message)s"
         log_level = config.get('gist', 'log-level').upper()
-        logging.getLogger().setLevel(log_level)
+        logging.basicConfig(format=fmt)
+        logging.getLogger('gist').setLevel(log_level)
     except Exception:
-        logging.getLogger().setLevel(logging.ERROR)
+        logging.getLogger('gist').setLevel(logging.ERROR)
 
     # Determine the editor to use
     editor = None
