@@ -292,7 +292,6 @@ Dependencies
 * requests
 * responses
 * simplejson
-* six
 * tox
 
 Optional packages (for fuzzy matching)

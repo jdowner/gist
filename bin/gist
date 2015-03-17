@@ -114,7 +114,6 @@ import termios
 import docopt
 import gnupg
 import simplejson as json
-import six
 
 import gist
 
@@ -350,12 +349,12 @@ def main(argv=sys.argv[1:], config=None):
             gpg = gnupg.GPG(gnupghome=homedir, use_agent=True)
 
             for name, lines in content.items():
-                lines = six.u(gpg.decrypt(lines).data)
-                print(six.u('{} (decrypted):\n{}\n').format(name, lines))
+                lines = gpg.decrypt(lines).data.decode('utf-8')
+                print(u'{} (decrypted):\n{}\n'.format(name, lines))
 
         else:
             for name, lines in content.items():
-                print(six.u('{}:\n{}\n').format(name, lines))
+                print(u'{}:\n{}\n'.format(name, lines))
 
         return
 
