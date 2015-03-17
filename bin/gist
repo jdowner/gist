@@ -321,7 +321,7 @@ def main(argv=sys.argv[1:], config=None):
                 raise GistError('gnupg-homedir missing from config file')
 
             homedir = config.get('gist', 'gnupg-homedir')
-            gpg = gnupg.GPG(homedir=homedir)
+            gpg = gnupg.GPG(gnupghome=homedir, use_agent=True)
 
             for name, lines in content.items():
                 lines = six.u(gpg.decrypt(lines).data)
