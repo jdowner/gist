@@ -10,6 +10,8 @@ import tempfile
 
 __version__ = '0.1.12'
 
+requests.packages.urllib3.disable_warnings()
+
 
 @contextlib.contextmanager
 def pushd(path):
