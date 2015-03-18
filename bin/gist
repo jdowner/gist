@@ -262,10 +262,11 @@ def main(argv=sys.argv[1:], config=None):
             config.readfp(fp)
 
     # Setup logging
+    fmt = "%(created).3f %(levelname)s[%(name)s] %(message)s"
+    logging.basicConfig(format=fmt)
+
     try:
-        fmt = "%(created).3f %(levelname)s[%(name)s] %(message)s"
         log_level = config.get('gist', 'log-level').upper()
-        logging.basicConfig(format=fmt)
         logging.getLogger('gist').setLevel(log_level)
     except Exception:
         logging.getLogger('gist').setLevel(logging.ERROR)
@@ -283,9 +284,7 @@ def main(argv=sys.argv[1:], config=None):
     gapi = gist.GistAPI(token=token, editor=editor)
 
     if args['list']:
-        gist_id = args['<id>']
         logger.debug(u'action: list')
-        logger.debug(u'action: - {}'.format(gist_id))
         gists = gapi.list()
         for info in gists:
             public = '+' if info.public else '-'
