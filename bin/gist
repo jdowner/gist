@@ -284,9 +284,7 @@ def main(argv=sys.argv[1:], config=None):
     gapi = gist.GistAPI(token=token, editor=editor)
 
     if args['list']:
-        gist_id = args['<id>']
         logger.debug(u'action: list')
-        logger.debug(u'action: - {}'.format(gist_id))
         gists = gapi.list()
         for info in gists:
             public = '+' if info.public else '-'
