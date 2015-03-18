@@ -8,6 +8,9 @@ them.
 
 .. image:: https://travis-ci.org/jdowner/gist.svg?branch=master
     :target: https://travis-ci.org/jdowner/gist
+.. image:: https://pypip.in/status/python-gist/badge.svg
+    :target: https://pypi.python.org/pypi/python-gist/
+    :alt: Development Status
 
 Installation
 --------------------------------------------------
