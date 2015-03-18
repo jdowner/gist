@@ -3,6 +3,7 @@ import collections
 import contextlib
 import simplejson as json
 import os
+import re
 import requests
 import shutil
 import tarfile
@@ -154,29 +155,69 @@ class GistAPI(object):
             request.url = os.path.join(request.url, stem)
         return requests.Session().send(request.prepare())
 
-    @authenticate.get
-    def list(self, request):
+    def list(self):
         """Returns a list of the users gists as GistInfo objects
-
-        Arguments:
-            request: an initial request object
 
         Returns:
             a list of GistInfo objects
 
         """
-        gists = self.send(request).json()
-        info = []
-        for gist in gists:
-            info.append(
-                    GistInfo(
-                        gist['id'],
-                        gist['public'],
-                        gist['description'],
-                        )
-                    )
+        # Define the basic request. The per_page parameter is set to 100, which
+        # is the maximum github allows. If the user has more than one page of
+        # gists, this request object will be modified to retrieve each
+        # successive page of gists.
+        request = requests.Request(
+                'GET',
+                'https://api.github.com/gists',
+                headers={
+                    'Accept-Encoding': 'identity, deflate, compress, gzip',
+                    'User-Agent': 'python-requests/1.2.0',
+                    'Accept': 'application/vnd.github.v3.base64',
+                    },
+                params={
+                    'access_token': self.token,
+                    'per_page': 100,
+                    },
+                )
 
-        return info
+        # Github provides a 'link' header that contains information to
+        # navigate through a users page of gists. This regex is used to
+        # extract the URLs contained in this header, and to find the next page
+        # of gists.
+        pattern = re.compile(r'<([^>]*)>; rel="([^"]*)"')
+
+        gists = []
+        while True:
+            # Retrieve the next page of gists
+            response = self.send(request)
+            for gist in response.json():
+                gists.append(
+                        GistInfo(
+                            gist['id'],
+                            gist['public'],
+                            gist['description'],
+                            )
+                        )
+
+            try:
+                link = response.headers['link']
+
+                # Search for the next page of gist. If a 'next' page is found,
+                # the URL is set to this new page and the iteration continues.
+                # If there is no next page, return the list of gists.
+                for result in pattern.finditer(link):
+                    url = result.group(1)
+                    rel = result.group(2)
+                    if rel == 'next':
+                        request.url = url
+                        break
+                else:
+                    return gists
+
+            except Exception:
+                break
+
+        return gists
 
     @authenticate.post
     def create(self, request, desc, files, public=False):
