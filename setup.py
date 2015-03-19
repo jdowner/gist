@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import setuptools
-import gist
 
 def dependencies():
     packages = ['tox']
@@ -13,7 +12,7 @@ def dependencies():
 
 setuptools.setup(
         name='python-gist',
-        version=gist.__version__,
+        version='0.2.1',
         description='Manage github gists',
         license='MIT',
         long_description=(open('README.rst').read()),
