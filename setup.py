@@ -36,6 +36,7 @@ setuptools.setup(
         scripts=['bin/gist'],
         install_requires=dependencies(),
         platforms=['Unix'],
+        test_suite="tests",
         classifiers=[
             'Development Status :: 4 - Beta',
             'Environment :: Console',

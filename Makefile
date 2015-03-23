@@ -19,7 +19,7 @@ uninstall:
 	fi
 
 test:
-	@cd tests && PYTHONPATH=${PYTHONPATH}:.. $(PYTHON) test_gist.py
+	$(PYTHON) setup.py test
 
 pep8:
 	$(PYTHON) -m pep8 $(FILES) --show-source
