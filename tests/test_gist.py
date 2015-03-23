@@ -28,7 +28,7 @@ import gist
 
 
 # import the CLI script as a module of gist
-setattr(gist, 'cli', imp.load_source('cli', '../bin/gist'))
+setattr(gist, 'cli', imp.load_source('cli', 'bin/gist'))
 
 
 @contextlib.contextmanager
