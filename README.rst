@@ -54,6 +54,12 @@ respectively, to be installed -- see Dependencies).
 The gist.fish script provides tab completion in the fish shell, and should be
 copied to ~/.config/fish/completions.
 
+To check that 'gist' is operating correctly, you can run the unit tests with,
+
+::
+
+  $ python setup.py test
+
 
 Getting started
 --------------------------------------------------
