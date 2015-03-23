@@ -222,7 +222,7 @@ class TestGistCLI(unittest.TestCase):
 
 class TestGistGPG(unittest.TestCase):
     def setUp(self):
-        self.gnupghome = os.path.abspath('./gnupg')
+        self.gnupghome = os.path.abspath('./tests/gnupg')
         self.gpg = gnupg.GPG(gnupghome=self.gnupghome, use_agent=True)
         self.fingerprint = self.gpg.list_keys()[0]['fingerprint']
 
