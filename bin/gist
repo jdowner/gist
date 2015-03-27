@@ -10,7 +10,7 @@ Usage:
     gist info <id>
     gist fork <id>
     gist files <id>
-    gist delete <id>
+    gist delete <id>...
     gist archive <id>
     gist content <id> [--decrypt]
     gist create <desc> [--public] [--encrypt] [FILES ...]
@@ -373,10 +373,11 @@ def main(argv=sys.argv[1:], config=None):
         return
 
     if args['delete']:
-        gist_id = args['<id>']
+        gist_ids = args['<id>']
         logger.debug(u'action: delete')
-        logger.debug(u'action: - {}'.format(gist_id))
-        gapi.delete(gist_id)
+        logger.debug(u'action: - {}'.format(gist_ids))
+        for gist_id in gist_ids:
+            gapi.delete(gist_id)
         return
 
     if args['version']:
