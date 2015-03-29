@@ -104,7 +104,7 @@ command line. There are several commands available:
   gist description - updates the description of your gist
   gist list        - prints a list of your gists
   gist clone       - clones a gist
-  gist delete      - deletes a gist from github
+  gist delete      - deletes a gist or list of gists from github
   gist files       - prints a list of the files in a gist
   gist archive     - downloads a gist and creates a tarball
   gist content     - prints the content of the gist to stdout
@@ -202,7 +202,7 @@ on its unique identifier (i.e. not just the users) to the current directory.
 
 **gist delete**
 
-Deletes the specified gist.
+Deletes the specified gists from github.
 
 
 **gist files**
