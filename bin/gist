@@ -408,7 +408,7 @@ def main(argv=sys.argv[1:], config=None):
                         files[name] = fp.read().decode('utf-8')
             else:
                 logger.debug('action: - reading from editor')
-                with tempfile.NamedTemporaryFile('wb') as fp:
+                with tempfile.NamedTemporaryFile('wb+') as fp:
                     os.system('{} {}'.format(editor, fp.name))
                     fp.flush()
                     fp.seek(0)
