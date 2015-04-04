@@ -104,7 +104,9 @@ Commands:
 
 """
 
+import codecs
 import fcntl
+import locale
 import logging
 import os
 import struct
@@ -125,6 +127,12 @@ except ImportError:
 
 
 logger = logging.getLogger('gist')
+
+
+# We need to wrap stdout in order to properly handle piping uincode output
+stream = sys.stdout.detach() if sys.version_info[0] > 2 else sys.stdout
+encoding = locale.getpreferredencoding()
+sys.stdout = codecs.getwriter(encoding)(stream)
 
 
 class GistError(Exception):
