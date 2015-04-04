@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Name:
     gist
@@ -103,7 +104,9 @@ Commands:
 
 """
 
+import codecs
 import fcntl
+import locale
 import logging
 import os
 import struct
@@ -124,6 +127,12 @@ except ImportError:
 
 
 logger = logging.getLogger('gist')
+
+
+# We need to wrap stdout in order to properly handle piping uincode output
+stream = sys.stdout.detach() if sys.version_info[0] > 2 else sys.stdout
+encoding = locale.getpreferredencoding()
+sys.stdout = codecs.getwriter(encoding)(stream)
 
 
 class GistError(Exception):
@@ -290,7 +299,10 @@ def main(argv=sys.argv[1:], config=None):
             public = '+' if info.public else '-'
             desc = '' if info.desc is None else info.desc
             line = u'{} {} {}'.format(info.id, public, desc)
-            print(elide(line))
+            try:
+                print(elide(line))
+            except UnicodeEncodeError:
+                logger.error('unable to write gist {}'.format(info.id))
         return
 
     if args['info']:
