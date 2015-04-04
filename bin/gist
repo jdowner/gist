@@ -299,7 +299,10 @@ def main(argv=sys.argv[1:], config=None):
             public = '+' if info.public else '-'
             desc = '' if info.desc is None else info.desc
             line = u'{} {} {}'.format(info.id, public, desc)
-            print(elide(line))
+            try:
+                print(elide(line))
+            except UnicodeEncodeError:
+                logger.error('unable to write gist {}'.format(info.id))
         return
 
     if args['info']:
