@@ -2,13 +2,6 @@
 
 import setuptools
 
-def dependencies():
-    packages = ['tox']
-    with open("requirements.txt") as fp:
-        packages.extend(line for line in fp.readlines() if line)
-
-    return packages
-
 
 setuptools.setup(
         name='python-gist',
@@ -35,7 +28,15 @@ setuptools.setup(
               ]),
         ],
         scripts=['bin/gist'],
-        install_requires=dependencies(),
+        install_requires=[
+            'docopt',
+            'python-gnupg',
+            'pep8',
+            'requests',
+            'responses',
+            'simplejson',
+            'tox',
+            ],
         platforms=['Unix'],
         test_suite="tests",
         classifiers=[

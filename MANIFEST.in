@@ -1,5 +1,6 @@
 include LICENSE
 include README.rst
 include share/gist.bash
+include share/gist.zsh
 include share/gist-fzf.bash
 include share/gist-fzsl.bash
