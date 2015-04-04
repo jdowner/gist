@@ -12,7 +12,7 @@ def dependencies():
 
 setuptools.setup(
         name='python-gist',
-        version='0.3.0',
+        version='0.3.1',
         description='Manage github gists',
         license='MIT',
         long_description=(open('README.rst').read()),
