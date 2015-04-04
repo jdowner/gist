@@ -5,7 +5,7 @@ import setuptools
 
 setuptools.setup(
         name='python-gist',
-        version='0.3.1',
+        version='0.3.2',
         description='Manage github gists',
         license='MIT',
         long_description=(open('README.rst').read()),
