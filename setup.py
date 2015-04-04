@@ -29,6 +29,7 @@ setuptools.setup(
               'README.rst',
               'LICENSE',
               'share/gist.bash',
+              'share/gist.zsh',
               'share/gist-fzsl.bash',
               'share/gist-fzf.bash',
               ]),
