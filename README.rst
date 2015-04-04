@@ -34,10 +34,11 @@ or,
   $ sudo make install
 
 This will install the python package 'gist' to the standard location for your
-system and copy the license, readme, and some bash scripts into /usr/share/gist.
+system and copy the license, readme, and some shell scripts into
+/usr/share/gist.
 
-There is also tab-completion available for bash and fish shells. The scripts are
-installed in /usr/local/share/gist.
+There are also script to provide tab-completion for bash, fish, and zsh shells.
+The scripts are installed in /usr/local/share/gist.
 
 There are 3 different scripts for tab-completion in bash: gist.bash,
 gist-fzf.bash, and gist-fzsl.bash. The first, provides simple tab completion and
@@ -48,11 +49,18 @@ can be enable by adding the following to your .bashrc file,
   source /usr/local/share/gist/gist.bash
 
 The other scripts, gist-fzf.bash and fist-fzsl.bash, provide fuzzy matching of
-gists using an ncurses interface (NB: these scripts request fzf and fzsl,
+gists using an ncurses interface (NB: these scripts require fzf and fzsl,
 respectively, to be installed -- see Dependencies).
 
-The gist.fish script provides tab completion in the fish shell, and should be
+The gist.fish script provides tab completion for the fish shell, and should be
 copied to ~/.config/fish/completions.
+
+The gist.zsh script provides tab completion for the zsh shell, and should be
+copied to ~/.zsh as _gist. If not already in your ~/.zshrc file, you should add
+
+::
+
+  fpath=(${HOME}/.zsh $fpath)
 
 To check that 'gist' is operating correctly, you can run the unit tests with,
 
