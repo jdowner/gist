@@ -31,11 +31,8 @@ setuptools.setup(
         install_requires=[
             'docopt',
             'python-gnupg',
-            'pep8',
             'requests',
-            'responses',
             'simplejson',
-            'tox',
             ],
         platforms=['Unix'],
         test_suite="tests",
