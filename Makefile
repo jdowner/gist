@@ -26,3 +26,6 @@ pep8:
 
 tox:
 	tox --skip-missing-interpreters --develop
+
+clean:
+	git clean -xdf
