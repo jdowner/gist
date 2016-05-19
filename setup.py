@@ -25,7 +25,7 @@ setuptools.setup(
           '': ['share/*', '*.rst', 'LICENSE'],
         },
         data_files=[
-          ('share/gist/', [
+          ('share/gist', [
               'README.rst',
               'LICENSE',
               'share/gist.bash',
