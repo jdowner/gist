@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 
 import setuptools
+import unittest
+
+
+def discover_test_suite():
+    test_loader = unittest.TestLoader()
+    test_suite = test_loader.discover("tests", pattern="test_*.py")
+    return test_suite
 
 
 setuptools.setup(
@@ -35,7 +42,7 @@ setuptools.setup(
             'simplejson',
             ],
         platforms=['Unix'],
-        test_suite="tests",
+        test_suite="setup.discover_test_suite",
         classifiers=[
             'Development Status :: 4 - Beta',
             'Environment :: Console',

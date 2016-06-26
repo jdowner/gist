@@ -152,6 +152,8 @@ class TestGist(unittest.TestCase):
 
 class TestGistCLI(unittest.TestCase):
     def setUp(self):
+        os.environ["EDITOR"] = "gist-placeholder"
+
         self.config = configparser.ConfigParser()
         self.config.add_section('gist')
         self.config.set('gist', 'token', 'foo')
@@ -222,6 +224,8 @@ class TestGistCLI(unittest.TestCase):
 
 class TestGistGPG(unittest.TestCase):
     def setUp(self):
+        os.environ["EDITOR"] = "gist-placeholder"
+
         self.gnupghome = os.path.abspath('./tests/gnupg')
         self.gpg = gnupg.GPG(gnupghome=self.gnupghome, use_agent=True)
         self.fingerprint = self.gpg.list_keys()[0]['fingerprint']
