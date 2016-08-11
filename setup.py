@@ -12,7 +12,7 @@ def discover_test_suite():
 
 setuptools.setup(
         name='python-gist',
-        version='0.3.2',
+        version='0.4.0',
         description='Manage github gists',
         license='MIT',
         long_description=(open('README.rst').read()),
