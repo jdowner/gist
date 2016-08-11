@@ -332,3 +332,4 @@ Thank you to the following people for contributing to 'gist'!
 * Kaan Genç (https://github.com/SeriousBug)
 * Eric James Michael Ritz (https://github.com/ejmr)
 * Karan Parikh (https://github.com/karanparikh)
+* Konstantin Krastev (https://github.com/grizmin)
