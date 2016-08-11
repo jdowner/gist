@@ -13,7 +13,7 @@ Usage:
     gist files <id>
     gist delete <ids> ...
     gist archive <id>
-    gist content <id> [--decrypt]
+    gist content <id> [<filename>] [--decrypt]
     gist create <desc> [--public] [--encrypt] [FILES ...]
     gist clone <id> [<name>]
     gist version
@@ -94,6 +94,13 @@ Commands:
         For each file in the gist the first line is the name of the file
         followed by a colon, and then the content of that file is written to
         the terminal.
+
+        If a filename is given, only the content of the specified filename
+        will be printed.
+
+           $ gist content de42344a4ecb6250d6cea00d9da6d83a file1
+           content of file 1
+
 
     info
         This command provides a complete dump of the information about the gist
@@ -350,6 +357,8 @@ def main(argv=sys.argv[1:], config=None):
         logger.debug(u'action: - {}'.format(gist_id))
 
         content = gapi.content(gist_id)
+        gist_file = content.get(args['<filename>'])
+
         if args['--decrypt']:
             if not config.has_option('gist', 'gnupg-homedir'):
                 raise GistError('gnupg-homedir missing from config file')
@@ -358,14 +367,19 @@ def main(argv=sys.argv[1:], config=None):
             logger.debug(u'action: - {}'.format(homedir))
 
             gpg = gnupg.GPG(gnupghome=homedir, use_agent=True)
-
-            for name, lines in content.items():
-                lines = gpg.decrypt(lines).data.decode('utf-8')
-                print(u'{} (decrypted):\n{}\n'.format(name, lines))
+            if gist_file is not None:
+                print(gpg.decrypt(gist_file).data.decode('utf-8'))
+            else:
+                for name, lines in content.items():
+                    lines = gpg.decrypt(lines).data.decode('utf-8')
+                    print(u'{} (decrypted):\n{}\n'.format(name, lines))
 
         else:
-            for name, lines in content.items():
-                print(u'{}:\n{}\n'.format(name, lines))
+            if gist_file is not None:
+                print(gist_file)
+            else:
+                for name, lines in content.items():
+                    print(u'{}:\n{}\n'.format(name, lines))
 
         return
 

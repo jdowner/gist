@@ -239,6 +239,15 @@ Writes the content of each file in the specified gist to the terminal, e.g.
 For each file in the gist the first line is the name of the file followed by a
 colon, and then the content of that file is written to the terminal.
 
+If a filename is given, only the content of the specified filename will be
+printed.
+
+::
+
+  $ gist content de42344a4ecb6250d6cea00d9da6d83a file1
+  content of file 1
+
+
 If the contents of the gist is encrypted, it can be viewed in its decrypted
 form by adding the --decrypt flag, e.g.
 
