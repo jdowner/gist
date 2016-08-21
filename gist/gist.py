@@ -138,6 +138,19 @@ class GistAPI(object):
         """
         self.token = token
         self.editor = editor
+        self.proxies = {}
+
+        http_proxy = os.environ.get("http_proxy") \
+            or os.environ.get("HTTP_PROXY")
+
+        if http_proxy is not None:
+            self.proxies["http"] = http_proxy
+
+        https_proxy = os.environ.get("https_proxy") \
+            or os.environ.get("HTTPS_PROXY")
+
+        if https_proxy is not None:
+            self.proxies["https"] = http_proxy
 
     def send(self, request, stem=None):
         """Prepare and send a request
@@ -153,7 +166,12 @@ class GistAPI(object):
         if stem is not None:
             assert not stem.startswith('/')
             request.url = os.path.join(request.url, stem)
-        return requests.Session().send(request.prepare())
+
+        session = requests.Session()
+        session.proxies = self.proxies
+        prepped = session.prepare_request(request)
+
+        return session.send(prepped)
 
     def list(self):
         """Returns a list of the users gists as GistInfo objects
