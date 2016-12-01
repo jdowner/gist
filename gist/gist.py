@@ -164,8 +164,7 @@ class GistAPI(object):
 
         """
         if stem is not None:
-            assert not stem.startswith('/')
-            request.url = os.path.join(request.url, stem)
+            request.url = request.url + "/" + stem.lstrip("/")
 
         session = requests.Session()
         session.proxies = self.proxies
