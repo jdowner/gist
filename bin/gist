@@ -180,11 +180,13 @@ def elide(txt, width=terminal_width()):
         A string that is no longer than the specified width.
 
     """
-    try:
-        if len(txt) > width:
-            return txt[:width - 3] + '...'
-    except Exception:
-        pass
+    if width is not None and width > 3:
+        try:
+            if len(txt) > width:
+                return txt[:width - 3] + '...'
+        except Exception:
+            pass
+
     return txt
 
 
