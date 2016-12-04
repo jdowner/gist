@@ -310,12 +310,15 @@ Dependencies
 'gist' currently depends on,
 
 * docopts
-* pep8
 * python-gnupg
 * requests
-* responses
 * simplejson
+
+The following packages are required for testing,
+
+* responses
 * tox
+* pep8
 
 Optional packages (for fuzzy matching)
 
