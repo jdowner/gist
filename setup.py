@@ -41,6 +41,12 @@ setuptools.setup(
             'requests',
             'simplejson',
             ],
+        extras_require={
+            "dev": [
+                "responses",
+                "pep8",
+                ]
+            },
         platforms=['Unix'],
         test_suite="setup.discover_test_suite",
         classifiers=[
