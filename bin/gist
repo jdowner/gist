@@ -270,18 +270,22 @@ def main(argv=sys.argv[1:], config=None):
             version='gist-v{}'.format(gist.__version__),
             )
 
+    # Setup logging
+    fmt = "%(created).3f %(levelname)s[%(name)s] %(message)s"
+    logging.basicConfig(format=fmt)
+
     # Read in the configuration file
     if config is None:
         config = configparser.ConfigParser()
         config_path = os.path.expanduser('~/.gist')
         config_path = alternative_config(config_path)
         config_path = xdg_data_config(config_path)
-        with open(config_path) as fp:
-            config.readfp(fp)
-
-    # Setup logging
-    fmt = "%(created).3f %(levelname)s[%(name)s] %(message)s"
-    logging.basicConfig(format=fmt)
+        try:
+            with open(config_path) as fp:
+                config.readfp(fp)
+        except Exception as e:
+            message = 'Unable to load configuration file: {0}'.format(e)
+            raise ValueError(message)
 
     try:
         log_level = config.get('gist', 'log-level').upper()
