@@ -336,4 +336,4 @@ Thank you to the following people for contributing to 'gist'!
 * Eric James Michael Ritz (https://github.com/ejmr)
 * Karan Parikh (https://github.com/karanparikh)
 * Konstantin Krastev (https://github.com/grizmin)
-* Brandom Davidson (https://github.com/brandond)
+* Brandon Davidson (https://github.com/brandond)
