@@ -95,6 +95,12 @@ If more than one of these files exist, this is also the order of preference,
 i.e. a configuration that is found in the ``${XDG_DATA_HOME}`` directory will be
 taken in preference to ``${HOME}/.config/gist``.
 
+Also, 'gist' assumes that you have set up your github account to use SSH keys so
+that you can access your repositories without needing to provide a password.
+Here__ is a link on setting up SSH keys with github.
+
+__ https://help.github.com/articles/connecting-to-github-with-ssh/
+
 
 Usage
 --------------------------------------------------
