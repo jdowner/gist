@@ -29,3 +29,9 @@ tox:
 
 clean:
 	git clean -xdf
+
+pypitest:
+	python setup.py sdist upload -r pypitest
+
+pypi:
+	python setup.py sdist upload -r pypi
