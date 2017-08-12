@@ -15,6 +15,7 @@ Usage:
     gist archive <id>
     gist content <id> [<filename>] [--decrypt]
     gist create <desc> [--public] [--encrypt] [FILES ...]
+    gist create <desc> [--public] [--encrypt] [--filename <filename>]
     gist clone <id> [<name>]
     gist version
 
@@ -38,6 +39,15 @@ Commands:
             $ gist create "gist description"
 
         which will open the users default editor.
+
+        If you are creating a gist with a single file using either the pipe or
+        'on the fly' method above, you can also supply an optional argument to
+        name the file instead of using the default ('file1.txt'),
+
+            $ gist create "gist description" --filename foo.md
+
+        Note that the use of --filename is incompatible with passing in a list
+        of existing files.
 
     edit
         You can edit your gists directly with the 'edit' command. This command
@@ -440,15 +450,18 @@ def main(argv=sys.argv[1:], config=None):
                         files[name] = fp.read().decode('utf-8')
             else:
                 logger.debug('action: - reading from editor')
+                filename = args.get("<filename>", "file1.txt")
+
                 with tempfile.NamedTemporaryFile('wb+') as fp:
                     os.system('{} {}'.format(editor, fp.name))
                     fp.flush()
                     fp.seek(0)
-                    files = {'file1.txt': fp.read().decode('utf-8')}
+                    files = {filename: fp.read().decode('utf-8')}
 
         else:
             logger.debug('action: - reading from stdin')
-            files = {'file1.txt': sys.stdin.read()}
+            filename = args.get("<filename>", "file1.txt")
+            files = {filename: sys.stdin.read()}
 
         description = args['<desc>']
         public = args['--public']
