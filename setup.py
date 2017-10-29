@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
+import io
 import setuptools
 import unittest
-
 
 def discover_test_suite():
     test_loader = unittest.TestLoader()
@@ -15,7 +15,7 @@ setuptools.setup(
         version='0.5.1',
         description='Manage github gists',
         license='MIT',
-        long_description=(open('README.rst').read()),
+        long_description=(io.open('README.rst', 'r', encoding='utf8').read()),
         author='Joshua Downer',
         author_email='joshua.downer@gmail.com',
         url='http://github.com/jdowner/gist',
