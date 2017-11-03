@@ -47,6 +47,11 @@ setuptools.setup(
                 "pep8",
                 ]
             },
+        tests_require = [
+            'pep8',
+            'responses',
+            'tox',
+        ],
         platforms=['Unix'],
         test_suite="setup.discover_test_suite",
         classifiers=[
