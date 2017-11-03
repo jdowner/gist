@@ -12,7 +12,7 @@ def discover_test_suite():
 
 setuptools.setup(
         name='python-gist',
-        version='0.5.2',
+        version='0.5.3',
         description='Manage github gists',
         license='MIT',
         long_description=(io.open('README.rst', 'r', encoding='utf8').read()),
@@ -64,6 +64,7 @@ setuptools.setup(
             'Programming Language :: Python :: 3.3',
             'Programming Language :: Python :: 3.4',
             'Programming Language :: Python :: 3.5',
+            'Programming Language :: Python :: 3.6',
             'Topic :: Software Development',
             'Topic :: Software Development :: Version Control',
             'Topic :: Utilities',
