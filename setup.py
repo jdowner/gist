@@ -37,7 +37,7 @@ setuptools.setup(
         scripts=['bin/gist'],
         install_requires=[
             'docopt',
-            'python-gnupg',
+            'python-gnupg>=0.4.1',
             'requests',
             'simplejson',
             ],
