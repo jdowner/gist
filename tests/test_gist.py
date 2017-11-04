@@ -3,10 +3,12 @@
 
 import base64
 import contextlib
+import errno
 import gnupg
 import imp
 import os
 import shlex
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -29,6 +31,38 @@ import gist
 
 # import the CLI script as a module of gist
 setattr(gist, 'cli', imp.load_source('cli', 'bin/gist'))
+
+
+def kill_gpg_agent(homedir):
+    """Try to kill the spawned gpg-agent
+
+    This is just a best-effort.  With gpg-1.x, the agent will most likely not
+    get started unless the user has done configuration to enforce it.  With
+    gpg-2.x, the agent will always be spawned as it is responsible for all
+    handling of private keys.  However, it was not until gpg-2.1.13 that
+    gpgconf accepted the homedir argument.
+
+    So:
+        - gpg-1.x probably has nothing to kill and the return value doesn't
+          matter
+        - <gpg-2.1.13 will leave an agent running after the tests exit
+        - >=gpg-2.1.13 will correctly kill the agent on shutdown.
+
+    This could be improved, but 2.1.13 was released in mid-2016 and a quick
+    survey of distros using gpg-2 shows they've all moved past that point.
+    """
+    args = [
+        'gpgconf',
+        '--homedir',
+        homedir,
+        '--kill',
+        'gpg-agent',
+    ]
+    try:
+        subprocess.call(args)
+    except OSError as e:
+        if e.errno != errno.ENOENT:
+            raise
 
 
 @contextlib.contextmanager
@@ -223,10 +257,11 @@ class TestGistCLI(unittest.TestCase):
 
 
 class TestGistGPG(unittest.TestCase):
+    gnupghome = os.path.abspath('./tests/gnupg')
+
     def setUp(self):
         os.environ["EDITOR"] = "gist-placeholder"
 
-        self.gnupghome = os.path.abspath('./tests/gnupg')
         self.gpg = gnupg.GPG(gnupghome=self.gnupghome, use_agent=True)
         self.fingerprint = self.gpg.list_keys()[0]['fingerprint']
 
@@ -235,6 +270,10 @@ class TestGistGPG(unittest.TestCase):
         self.config.set('gist', 'token', 'foo')
         self.config.set('gist', 'gnupg-homedir', self.gnupghome)
         self.config.set('gist', 'gnupg-fingerprint', self.fingerprint)
+
+    @classmethod
+    def tearDownClass(cls):
+        kill_gpg_agent(cls.gnupghome)
 
     def command_response(self, cmd):
         """Return stdout produce by the specified CLI command"""
