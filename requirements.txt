@@ -1,4 +1,4 @@
 docopt
-python-gnupg
+python-gnupg>=0.4.1
 requests
 simplejson

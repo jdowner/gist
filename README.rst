@@ -316,7 +316,7 @@ Dependencies
 'gist' currently depends on,
 
 * docopts
-* python-gnupg
+* >=python-gnupg-0.4.1
 * requests
 * simplejson
 

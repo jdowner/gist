@@ -37,7 +37,7 @@ setuptools.setup(
         scripts=['bin/gist'],
         install_requires=[
             'docopt',
-            'python-gnupg',
+            'python-gnupg>=0.4.1',
             'requests',
             'simplejson',
             ],
@@ -47,6 +47,11 @@ setuptools.setup(
                 "pep8",
                 ]
             },
+        tests_require = [
+            'pep8',
+            'responses',
+            'tox',
+        ],
         platforms=['Unix'],
         test_suite="setup.discover_test_suite",
         classifiers=[
