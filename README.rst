@@ -344,3 +344,4 @@ Thank you to the following people for contributing to 'gist'!
 * Konstantin Krastev (https://github.com/grizmin)
 * Brandon Davidson (https://github.com/brandond)
 * jq170727 (https://github.com/jq170727)
+* jsbronder (https://github.com/jsbronder)
