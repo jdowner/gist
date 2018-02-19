@@ -70,7 +70,7 @@ Getting started
 --------------------------------------------------
 
 'gist' requires a personal access token for authentication. To create a token,
-go to https://github.com/settings/applications. The token needs to then be added
+go to https://github.com/settings/tokens. The token needs to then be added
 to a 'gist' configuration file that should have the form,
 
 ::
