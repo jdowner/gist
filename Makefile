@@ -21,8 +21,8 @@ uninstall:
 test:
 	$(PYTHON) setup.py test
 
-pep8:
-	$(PYTHON) -m pep8 $(FILES) --show-source
+style:
+	pycodestyle --config=./setup.cfg $(FILES)
 
 tox:
 	tox --skip-missing-interpreters --develop
