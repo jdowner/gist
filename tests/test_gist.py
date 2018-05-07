@@ -120,6 +120,17 @@ class TestGist(unittest.TestCase):
         self.assertFalse(gistB.public)
 
     @responses.activate
+    def test_list_empty(self):
+        responses.add(responses.GET, 'https://api.github.com/gists',
+                body="",
+                status=200,
+                )
+
+        gists = gist.GistAPI(token='foo').list()
+
+        self.assertTrue(len(gists) == 0)
+
+    @responses.activate
     def test_content(self):
         responses.add(responses.GET, 'https://api.github.com/gists/1',
                 body=json.dumps({

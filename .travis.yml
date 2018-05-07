@@ -9,7 +9,7 @@ python:
 # command to install dependencies
 install:
   - "pip install -r requirements.txt"
-  - "pip install pep8 responses"
+  - "pip install pycodestyle responses"
 
 # command to run tests
-script: make test pep8
+script: make test style
