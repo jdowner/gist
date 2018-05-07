@@ -196,16 +196,27 @@ class GistAPI(object):
 
         gists = []
         while True:
+
             # Retrieve the next page of gists
-            response = self.send(request)
-            for gist in response.json():
-                gists.append(
-                        GistInfo(
-                            gist['id'],
-                            gist['public'],
-                            gist['description'],
+            try:
+                response = self.send(request).json()
+
+            except Exception:
+                break
+
+            # Extract the list of gists
+            for gist in response:
+                try:
+                    gists.append(
+                            GistInfo(
+                                gist['id'],
+                                gist['public'],
+                                gist['description'],
+                                )
                             )
-                        )
+
+                except KeyError:
+                    continue
 
             try:
                 link = response.headers['link']
