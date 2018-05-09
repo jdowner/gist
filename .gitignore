@@ -57,5 +57,5 @@ installed-files.txt
 bin/gistc
 tests/gnupg/*
 .vscode/settings.json
-.idea/
+.idea
 .idea/*
