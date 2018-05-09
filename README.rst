@@ -332,6 +332,13 @@ Optional packages (for fuzzy matching)
 * fzsl  (https://github.com/jsbronder/fzsl)
 
 
+Also, You can install required modules by the following command:
+
+::
+
+  $ pip install -r requirements.txt
+
+
 Contributors
 --------------------------------------------------
 
