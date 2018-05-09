@@ -44,11 +44,11 @@ setuptools.setup(
         extras_require={
             "dev": [
                 "responses",
-                "pycodestyle",
+                "pep8",
                 ]
             },
         tests_require = [
-            'pycodestyle',
+            'pep8',
             'responses',
             'tox',
         ],
