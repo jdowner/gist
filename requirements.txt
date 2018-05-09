@@ -1,4 +1,9 @@
-docopt
-python-gnupg>=0.4.1
-requests
-simplejson
+certifi==2018.4.16
+chardet==3.0.4
+docopt==0.6.2
+gnupg==2.3.1
+idna==2.6
+psutil==5.4.5
+requests==2.18.4
+simplejson==3.14.0
+urllib3==1.22
