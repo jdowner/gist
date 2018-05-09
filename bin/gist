@@ -134,6 +134,8 @@ import termios
 import docopt
 import gnupg
 import simplejson as json
+import sys
+sys.path.append('./')
 
 import gist
 
