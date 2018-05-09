@@ -5,6 +5,7 @@ import simplejson as json
 import os
 import re
 import requests
+from requests import HTTPError
 import shutil
 import tarfile
 import tempfile
@@ -128,16 +129,18 @@ class GistAPI(object):
     This class defines the interface to github.
     """
 
-    def __init__(self, token, editor=None):
+    def __init__(self, token, editor=None, as_module=False):
         """Create a GistAPI object
 
         Arguments:
             token: an authentication token
             editor: path to the editor to use when editing a gist
+            as_module: indicate using library as module
 
         """
         self.token = token
         self.editor = editor
+        self.as_module = as_module
         self.session = requests.Session()
 
     def send(self, request, stem=None):
@@ -257,7 +260,16 @@ class GistAPI(object):
                 "public": public,
                 "files": files,
                 })
-        return self.send(request).json()['html_url']
+
+        try:
+            resp = self.send(request)
+
+            if resp.status_code == 201:
+                return resp if self.as_module else resp.json()['html_url']
+            else:
+                raise HTTPError(response=resp)
+        except HTTPError as error:
+            return error.response if self.as_module else error.response.json()
 
     @authenticate.delete
     def delete(self, request, id):
