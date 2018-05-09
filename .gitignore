@@ -56,3 +56,4 @@ target/
 installed-files.txt
 bin/gistc
 tests/gnupg/*
+.vscode/settings.json
