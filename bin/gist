@@ -142,6 +142,10 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
+# From version 3.2 readfp() has been deprecated and replaced by read_file().
+# Here we monkeypatch earlier versions so that we have a consist interface.
+if sys.version_info < (3, 2):
+    configparser.ConfigParser.read_file = configparser.ConfigParser.readfp
 
 logger = logging.getLogger('gist')
 
@@ -292,7 +296,7 @@ def main(argv=sys.argv[1:], config=None):
         config_path = xdg_data_config(config_path)
         try:
             with open(config_path) as fp:
-                config.readfp(fp)
+                config.read_file(fp)
         except Exception as e:
             message = 'Unable to load configuration file: {0}'.format(e)
             raise ValueError(message)
