@@ -456,11 +456,21 @@ def main(argv=sys.argv[1:], config=None):
                 logger.debug('action: - reading from editor')
                 filename = args.get("<filename>", "file1.txt")
 
-                with tempfile.NamedTemporaryFile('wb+') as fp:
+                # Determine whether the temporary file should be deleted
+                if config.has_option('gist', 'delete-tempfiles'):
+                    delete = config.getboolean('gist', 'delete-tempfiles')
+                else:
+                    delete = True
+
+                with tempfile.NamedTemporaryFile('wb+', delete=delete) as fp:
+                    logger.debug('action: - created {}'.format(fp.name))
                     os.system('{} {}'.format(editor, fp.name))
                     fp.flush()
                     fp.seek(0)
                     files = {filename: fp.read().decode('utf-8')}
+
+                if delete:
+                    logger.debug('action: - removed {}'.format(fp.name))
 
         else:
             logger.debug('action: - reading from stdin')
