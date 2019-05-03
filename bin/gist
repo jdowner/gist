@@ -485,6 +485,11 @@ def main(argv=sys.argv[1:], config=None):
             filename = args.get("<filename>", "file1.txt")
             files.append(FileInfo(filename, sys.stdin.read()))
 
+        # Ensure that there are no empty files
+        for file in files:
+            if len(file.content) == 0:
+                raise GistError("'{}' is empty".format(file.name))
+
         description = args['<desc>']
         public = args['--public']
 
