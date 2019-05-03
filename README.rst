@@ -300,6 +300,7 @@ The configuration file follows the .ini style. The following is an example,
   editor: /usr/bin/vim
   gnupg-homedir: /home/user/.gnupg
   gnupg-fingerprint: 179F9650D9FC1BFE391620B4B13A7829D8DE8623
+  delete-tempfiles: False
 
 The only essential field in the configuration file is the token. This is the
 authentication token from github that grants gist permission to access your
@@ -308,6 +309,11 @@ you wish to use a different editor. 'gnupg-homedir' is the directory where your
 gnupg data are stored, and 'gnupg-fingerprint' is the fingerprint of the key to
 use to encrypt data in your gists. Both gnupg fields are required to support
 encryption/decryption.
+
+The 'delete-tempfiles' option is used when gists are created from an editor.
+The editor writes its contents to a temporary file, which is deleted by
+default. The default behavior can be overridden by using the 'delete-tempfiles'
+flag.
 
 
 Dependencies

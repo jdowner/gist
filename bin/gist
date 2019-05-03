@@ -122,6 +122,7 @@ Commands:
 """
 
 import codecs
+import collections
 import fcntl
 import locale
 import logging
@@ -160,6 +161,10 @@ class GistError(Exception):
     def __init__(self, msg):
         super(GistError, self).__init__(msg)
         self.msg = msg
+
+
+class FileInfo(collections.namedtuple("FileInfo", "name content")):
+    pass
 
 
 def terminal_width():
@@ -444,28 +449,46 @@ def main(argv=sys.argv[1:], config=None):
                 raise GistError('gnupg-fingerprint missing from config file')
 
         # Retrieve the data to add to the gist
+        files = list()
+
         if sys.stdin.isatty():
             if args['FILES']:
                 logger.debug('action: - reading from files')
-                files = {}
                 for path in args['FILES']:
                     name = os.path.basename(path)
                     with open(path, 'rb') as fp:
-                        files[name] = fp.read().decode('utf-8')
+                        files.append(FileInfo(name, fp.read().decode('utf-8')))
+
             else:
                 logger.debug('action: - reading from editor')
                 filename = args.get("<filename>", "file1.txt")
 
-                with tempfile.NamedTemporaryFile('wb+') as fp:
+                # Determine whether the temporary file should be deleted
+                if config.has_option('gist', 'delete-tempfiles'):
+                    delete = config.getboolean('gist', 'delete-tempfiles')
+                else:
+                    delete = True
+
+                with tempfile.NamedTemporaryFile('wb+', delete=delete) as fp:
+                    logger.debug('action: - created {}'.format(fp.name))
                     os.system('{} {}'.format(editor, fp.name))
                     fp.flush()
                     fp.seek(0)
-                    files = {filename: fp.read().decode('utf-8')}
+
+                    files.append(FileInfo(filename, fp.read().decode('utf-8')))
+
+                if delete:
+                    logger.debug('action: - removed {}'.format(fp.name))
 
         else:
             logger.debug('action: - reading from stdin')
             filename = args.get("<filename>", "file1.txt")
-            files = {filename: sys.stdin.read()}
+            files.append(FileInfo(filename, sys.stdin.read()))
+
+        # Ensure that there are no empty files
+        for file in files:
+            if len(file.content) == 0:
+                raise GistError("'{}' is empty".format(file.name))
 
         description = args['<desc>']
         public = args['--public']
@@ -479,12 +502,13 @@ def main(argv=sys.argv[1:], config=None):
 
             gpg = gnupg.GPG(gnupghome=gnupghome, use_agent=True)
             data = {}
-            for k, v in files.items():
-                cypher = gpg.encrypt(v.encode('utf-8'), fingerprint)
+            for file in files:
+                cypher = gpg.encrypt(file.content.encode('utf-8'), fingerprint)
                 content = cypher.data.decode('utf-8')
-                data['{}.asc'.format(k)] = {'content': content}
+
+                data['{}.asc'.format(file.name)] = {'content': content}
         else:
-            data = {k: {'content': v} for k, v in files.items()}
+            data = {file.name: {'content': file.content} for file in files}
 
         print(gapi.create(description, data, public))
         return
