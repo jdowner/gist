@@ -161,7 +161,12 @@ class GistAPI(object):
                                                            verify=None,
                                                            cert=None)
 
-        return self.session.send(prepped, **settings)
+        response = self.session.send(prepped, **settings)
+
+        if not response.ok:
+            response.raise_for_status()
+
+        return response
 
     def list(self):
         """Returns a list of the users gists as GistInfo objects
