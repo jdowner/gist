@@ -123,20 +123,23 @@ Commands:
 
 import codecs
 import collections
-import fcntl
 import locale
 import logging
 import os
 import struct
 import sys
 import tempfile
-import termios
-
 import docopt
 import gnupg
 import simplejson as json
+import platform
 
 import gist
+
+if platform.system() != 'Windows':
+    # those modules exist everywhere but on Windows
+    import termios
+    import fcntl
 
 try:
     import configparser
@@ -149,7 +152,6 @@ if sys.version_info < (3, 2):
     configparser.ConfigParser.read_file = configparser.ConfigParser.readfp
 
 logger = logging.getLogger('gist')
-
 
 # We need to wrap stdout in order to properly handle piping uincode output
 stream = sys.stdout.detach() if sys.version_info[0] > 2 else sys.stdout
@@ -175,11 +177,22 @@ def terminal_width():
 
     """
     try:
-        exitcode = fcntl.ioctl(
-                0,
-                termios.TIOCGWINSZ,
-                struct.pack('HHHH', 0, 0, 0, 0))
-        h, w, hp, wp = struct.unpack('HHHH', exitcode)
+        if platform.system() == "Windows":
+            from ctypes import windll, create_string_buffer
+            hStdErr = -12
+            herr = windll.kernel32.GetStdHandle(hStdErr)
+            csbi = create_string_buffer(22)
+            if not windll.kernel32.GetConsoleScreenBufferInfo(herr, csbi):
+                raise OSError("Failed to determine the terminal size")
+            (_, _, _, _, _, left, top, right, bottom, _, _) = struct.unpack("hhhhHhhhhhh", csbi.raw)
+            tty_columns = right - left + 1
+            return tty_columns
+        else:
+            exitcode = fcntl.ioctl(
+                    0,
+                    termios.TIOCGWINSZ,
+                    struct.pack('HHHH', 0, 0, 0, 0))
+            h, w, hp, wp = struct.unpack('HHHH', exitcode)
         return w
     except Exception:
         pass
@@ -257,7 +270,7 @@ def alternative_config(default):
         default: the default to use if ~/.config/gist does not exist.
 
     """
-    config_path = os.path.expanduser('~/.config/gist')
+    config_path = os.path.expanduser(os.sep.join(['~','.config','gist']))
     if os.path.isfile(config_path):
         return config_path
     else:
@@ -296,7 +309,7 @@ def main(argv=sys.argv[1:], config=None):
     # Read in the configuration file
     if config is None:
         config = configparser.ConfigParser()
-        config_path = os.path.expanduser('~/.gist')
+        config_path = os.path.expanduser(os.sep.join(['~','.gist']))
         config_path = alternative_config(config_path)
         config_path = xdg_data_config(config_path)
         try:
