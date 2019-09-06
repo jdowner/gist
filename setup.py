@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-import io, os
+import io
+import os
+import platform
 import setuptools
 import unittest
-import platform
 
 def discover_test_suite():
     test_loader = unittest.TestLoader()
