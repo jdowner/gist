@@ -126,15 +126,16 @@ import collections
 import locale
 import logging
 import os
+import platform
 import struct
 import sys
 import tempfile
+
 import docopt
 import gnupg
 import simplejson as json
-import platform
 
-import gist
+from . import gist
 
 if platform.system() != 'Windows':
     # those modules exist everywhere but on Windows
@@ -179,12 +180,14 @@ def terminal_width():
     try:
         if platform.system() == "Windows":
             from ctypes import windll, create_string_buffer
+            # Reference: https://docs.microsoft.com/en-us/windows/console/getstdhandle
             hStdErr = -12
+            get_console_info_fmtstr = "hhhhHhhhhhh"
             herr = windll.kernel32.GetStdHandle(hStdErr)
-            csbi = create_string_buffer(22)
+            csbi = create_string_buffer(struct.calcsize(get_console_info_fmtstr))
             if not windll.kernel32.GetConsoleScreenBufferInfo(herr, csbi):
                 raise OSError("Failed to determine the terminal size")
-            (_, _, _, _, _, left, top, right, bottom, _, _) = struct.unpack("hhhhHhhhhhh", csbi.raw)
+            (_, _, _, _, _, left, top, right, bottom, _, _) = struct.unpack(get_console_info_fmtstr, csbi.raw)
             tty_columns = right - left + 1
             return tty_columns
         else:
