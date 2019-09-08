@@ -9,7 +9,7 @@ import shutil
 import tarfile
 import tempfile
 
-__version__ = '0.7.0'
+__version__ = '0.8.0'
 
 requests.packages.urllib3.disable_warnings()
 

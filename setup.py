@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import io
+import os
 import setuptools
 import unittest
 
@@ -12,7 +13,7 @@ def discover_test_suite():
 
 setuptools.setup(
         name='python-gist',
-        version='0.7.0',
+        version='0.8.0',
         description='Manage github gists',
         license='MIT',
         long_description=(io.open('README.rst', 'r', encoding='utf8').read()),
@@ -22,19 +23,18 @@ setuptools.setup(
         keywords='gist github git',
         packages=['gist'],
         package_data={
-          '': ['share/*', '*.rst', 'LICENSE'],
+          '': [os.sep.join(['share','*']), '*.rst', 'LICENSE'],
         },
         data_files=[
-          ('share/gist/', [
+          (os.sep.join(['share','gist']), [
               'README.rst',
               'LICENSE',
-              'share/gist.bash',
-              'share/gist.zsh',
-              'share/gist-fzsl.bash',
-              'share/gist-fzf.bash',
+              os.sep.join(['share', 'gist.bash']),
+              os.sep.join(['share', 'gist.zsh']),
+              os.sep.join(['share', 'gist-fzsl.bash']),
+              os.sep.join(['share', 'gist-fzf.bash']),
               ]),
         ],
-        scripts=['bin/gist'],
         install_requires=[
             'docopt',
             'python-gnupg>=0.4.1',
@@ -52,7 +52,7 @@ setuptools.setup(
             'responses',
             'tox',
         ],
-        platforms=['Unix'],
+        platforms=['Unix', 'Windows'],
         test_suite="setup.discover_test_suite",
         classifiers=[
             'Development Status :: 4 - Beta',
@@ -70,8 +70,17 @@ setuptools.setup(
             'Programming Language :: Python :: 3.4',
             'Programming Language :: Python :: 3.5',
             'Programming Language :: Python :: 3.6',
+            'Programming Language :: Python :: 3.7',
             'Topic :: Software Development',
             'Topic :: Software Development :: Version Control',
             'Topic :: Utilities',
-            ]
+            ],
+
+            # `scripts` provides a non portable approach to creating binaries on the target
+            # `entry_points` is the recommended way to let setuptools do all the hard work.
+            entry_points={
+                'console_scripts': [
+                    'gist = gist.client:main',
+                ],
+            }
         )
