@@ -35,7 +35,6 @@ setuptools.setup(
               os.sep.join(['share', 'gist-fzf.bash']),
               ]),
         ],
-        scripts=['bin/gist'],
         install_requires=[
             'docopt',
             'python-gnupg>=0.4.1',
@@ -53,7 +52,7 @@ setuptools.setup(
             'responses',
             'tox',
         ],
-        platforms=['Unix'],
+        platforms=['Unix', 'Windows'],
         test_suite="setup.discover_test_suite",
         classifiers=[
             'Development Status :: 4 - Beta',
@@ -75,5 +74,13 @@ setuptools.setup(
             'Topic :: Software Development',
             'Topic :: Software Development :: Version Control',
             'Topic :: Utilities',
-            ]
+            ],
+
+            # `scripts` provides a non portable approach to creating binaries on the target
+            # `entry_points` is the recommended way to let setuptools do all the hard work.
+            entry_points={
+                'console_scripts': [
+                    'gist = gist.client:main',
+                ],
+            }
         )

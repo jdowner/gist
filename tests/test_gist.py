@@ -5,7 +5,6 @@ import base64
 import contextlib
 import errno
 import gnupg
-import imp
 import os
 import shlex
 import subprocess
@@ -30,7 +29,7 @@ import gist
 
 
 # import the CLI script as a module of gist
-setattr(gist, 'cli', imp.load_source('cli', 'bin/gist'))
+import gist.client
 
 
 def kill_gpg_agent(homedir):
@@ -206,7 +205,7 @@ class TestGistCLI(unittest.TestCase):
     def command_response(self, cmd):
         buf = StringIO()
         with redirect_stdout(buf):
-            gist.cli.main(argv=shlex.split(cmd), config=self.config)
+            gist.client.main(argv=shlex.split(cmd), config=self.config)
 
         return buf.getvalue().splitlines()
 
@@ -290,7 +289,7 @@ class TestGistGPG(unittest.TestCase):
         """Return stdout produce by the specified CLI command"""
         buf = StringIO()
         with redirect_stdout(buf):
-            gist.cli.main(argv=shlex.split(cmd), config=self.config)
+            gist.client.main(argv=shlex.split(cmd), config=self.config)
 
         return buf.getvalue().splitlines()
 
