@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import io
+import os
 import setuptools
 import unittest
 
@@ -22,16 +23,16 @@ setuptools.setup(
         keywords='gist github git',
         packages=['gist'],
         package_data={
-          '': ['share/*', '*.rst', 'LICENSE'],
+          '': [os.sep.join(['share','*']), '*.rst', 'LICENSE'],
         },
         data_files=[
-          ('share/gist/', [
+          (os.sep.join(['share','gist']), [
               'README.rst',
               'LICENSE',
-              'share/gist.bash',
-              'share/gist.zsh',
-              'share/gist-fzsl.bash',
-              'share/gist-fzf.bash',
+              os.sep.join(['share', 'gist.bash']),
+              os.sep.join(['share', 'gist.zsh']),
+              os.sep.join(['share', 'gist-fzsl.bash']),
+              os.sep.join(['share', 'gist-fzf.bash']),
               ]),
         ],
         scripts=['bin/gist'],
