@@ -180,14 +180,16 @@ def terminal_width():
     try:
         if platform.system() == "Windows":
             from ctypes import windll, create_string_buffer
-            # Reference: https://docs.microsoft.com/en-us/windows/console/getstdhandle
+            # Reference: https://docs.microsoft.com/en-us/windows/console/getstdhandle # noqa
             hStdErr = -12
             get_console_info_fmtstr = "hhhhHhhhhhh"
             herr = windll.kernel32.GetStdHandle(hStdErr)
-            csbi = create_string_buffer(struct.calcsize(get_console_info_fmtstr))
+            csbi = create_string_buffer(
+                    struct.calcsize(get_console_info_fmtstr))
             if not windll.kernel32.GetConsoleScreenBufferInfo(herr, csbi):
                 raise OSError("Failed to determine the terminal size")
-            (_, _, _, _, _, left, top, right, bottom, _, _) = struct.unpack(get_console_info_fmtstr, csbi.raw)
+            (_, _, _, _, _, left, top, right, bottom, _, _) = struct.unpack(
+                    get_console_info_fmtstr, csbi.raw)
             tty_columns = right - left + 1
             return tty_columns
         else:
@@ -273,7 +275,7 @@ def alternative_config(default):
         default: the default to use if ~/.config/gist does not exist.
 
     """
-    config_path = os.path.expanduser(os.sep.join(['~','.config','gist']))
+    config_path = os.path.expanduser(os.sep.join(['~', '.config', 'gist']))
     if os.path.isfile(config_path):
         return config_path
     else:
@@ -312,7 +314,7 @@ def main(argv=sys.argv[1:], config=None):
     # Read in the configuration file
     if config is None:
         config = configparser.ConfigParser()
-        config_path = os.path.expanduser(os.sep.join(['~','.gist']))
+        config_path = os.path.expanduser(os.sep.join(['~', '.gist']))
         config_path = alternative_config(config_path)
         config_path = xdg_data_config(config_path)
         try:
