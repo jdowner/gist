@@ -1,5 +1,5 @@
 SHELL=/bin/bash
-FILES=gist/gist.py bin/gist
+FILES=gist/gist.py gist/client.py
 PYTHON=/usr/bin/env python
 
 build:
