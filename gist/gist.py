@@ -9,7 +9,7 @@ import shutil
 import tarfile
 import tempfile
 
-__version__ = '0.8.1'
+__version__ = "0.9.0"
 
 requests.packages.urllib3.disable_warnings()
 
@@ -22,7 +22,7 @@ def pushd(path):
     os.chdir(original)
 
 
-class GistInfo(collections.namedtuple('GistInfo', 'id public desc')):
+class GistInfo(collections.namedtuple("GistInfo", "id public desc")):
     pass
 
 
@@ -32,7 +32,7 @@ class authenticate(object):
     github.
     """
 
-    def __init__(self, func, method='GET'):
+    def __init__(self, func, method="GET"):
         """Create an authenticate object
 
         Arguments:
@@ -44,10 +44,10 @@ class authenticate(object):
         self.owner = None
         self.instance = None
         self.headers = {
-                'Accept-Encoding': 'identity, deflate, compress, gzip',
-                'User-Agent': 'python-requests/1.2.0',
-                'Accept': 'application/vnd.github.v3.base64',
-                }
+            "Accept-Encoding": "identity, deflate, compress, gzip",
+            "User-Agent": "python-requests/1.2.0",
+            "Accept": "application/vnd.github.v3.base64",
+        }
         self.method = method
 
     @classmethod
@@ -58,7 +58,7 @@ class authenticate(object):
             func: a function to decorate
 
         """
-        return cls(func, method='GET')
+        return cls(func, method="GET")
 
     @classmethod
     def post(cls, func):
@@ -68,7 +68,7 @@ class authenticate(object):
             func: a function to decorate
 
         """
-        return cls(func, method='POST')
+        return cls(func, method="POST")
 
     @classmethod
     def patch(cls, func):
@@ -78,7 +78,7 @@ class authenticate(object):
             func: a function to decorate
 
         """
-        return cls(func, method='PATCH')
+        return cls(func, method="PATCH")
 
     @classmethod
     def delete(cls, func):
@@ -88,7 +88,7 @@ class authenticate(object):
             func: a function to decorate
 
         """
-        return cls(func, method='DELETE')
+        return cls(func, method="DELETE")
 
     def __get__(self, instance, owner):
         """Returns the __call__ method
@@ -109,14 +109,11 @@ class authenticate(object):
 
         """
         try:
-            url = 'https://api.github.com/gists'
-            params = {'access_token': self.instance.token}
+            url = "https://api.github.com/gists"
+            params = {"access_token": self.instance.token}
             request = requests.Request(
-                    self.method,
-                    url,
-                    headers=self.headers,
-                    params=params,
-                    )
+                self.method, url, headers=self.headers, params=params
+            )
             return self.func(self.instance, request, *args, **kwargs)
         finally:
             self.instance = None
@@ -155,11 +152,9 @@ class GistAPI(object):
             request.url = request.url + "/" + stem.lstrip("/")
 
         prepped = self.session.prepare_request(request)
-        settings = self.session.merge_environment_settings(url=prepped.url,
-                                                           proxies={},
-                                                           stream=None,
-                                                           verify=None,
-                                                           cert=None)
+        settings = self.session.merge_environment_settings(
+            url=prepped.url, proxies={}, stream=None, verify=None, cert=None
+        )
 
         response = self.session.send(prepped, **settings)
 
@@ -180,18 +175,15 @@ class GistAPI(object):
         # gists, this request object will be modified to retrieve each
         # successive page of gists.
         request = requests.Request(
-                'GET',
-                'https://api.github.com/gists',
-                headers={
-                    'Accept-Encoding': 'identity, deflate, compress, gzip',
-                    'User-Agent': 'python-requests/1.2.0',
-                    'Accept': 'application/vnd.github.v3.base64',
-                    },
-                params={
-                    'access_token': self.token,
-                    'per_page': 100,
-                    },
-                )
+            "GET",
+            "https://api.github.com/gists",
+            headers={
+                "Accept-Encoding": "identity, deflate, compress, gzip",
+                "User-Agent": "python-requests/1.2.0",
+                "Accept": "application/vnd.github.v3.base64",
+            },
+            params={"access_token": self.token, "per_page": 100},
+        )
 
         # Github provides a 'link' header that contains information to
         # navigate through a users page of gists. This regex is used to
@@ -213,18 +205,14 @@ class GistAPI(object):
             for gist in response:
                 try:
                     gists.append(
-                            GistInfo(
-                                gist['id'],
-                                gist['public'],
-                                gist['description'],
-                                )
-                            )
+                        GistInfo(gist["id"], gist["public"], gist["description"])
+                    )
 
                 except KeyError:
                     continue
 
             try:
-                link = response.headers['link']
+                link = response.headers["link"]
 
                 # Search for the next page of gist. If a 'next' page is found,
                 # the URL is set to this new page and the iteration continues.
@@ -232,7 +220,7 @@ class GistAPI(object):
                 for result in pattern.finditer(link):
                     url = result.group(1)
                     rel = result.group(2)
-                    if rel == 'next':
+                    if rel == "next":
                         request.url = url
                         break
                 else:
@@ -257,12 +245,10 @@ class GistAPI(object):
             The URL to the newly created gist.
 
         """
-        request.data = json.dumps({
-                "description": desc,
-                "public": public,
-                "files": files,
-                })
-        return self.send(request).json()['html_url']
+        request.data = json.dumps(
+            {"description": desc, "public": public, "files": files}
+        )
+        return self.send(request).json()["html_url"]
 
     @authenticate.delete
     def delete(self, request, id):
@@ -302,7 +288,7 @@ class GistAPI(object):
 
         """
         gist = self.send(request, id).json()
-        return gist['files']
+        return gist["files"]
 
     @authenticate.get
     def content(self, request, id):
@@ -319,11 +305,11 @@ class GistAPI(object):
         gist = self.send(request, id).json()
 
         def convert(data):
-            return base64.b64decode(data).decode('utf-8')
+            return base64.b64decode(data).decode("utf-8")
 
         content = {}
-        for name, data in gist['files'].items():
-            content[name] = convert(data['content'])
+        for name, data in gist["files"].items():
+            content[name] = convert(data["content"])
 
         return content
 
@@ -346,10 +332,10 @@ class GistAPI(object):
         """
         gist = self.send(request, id).json()
 
-        with tarfile.open('{}.tar.gz'.format(id), mode='w:gz') as archive:
-            for name, data in gist['files'].items():
-                with tempfile.NamedTemporaryFile('w+') as fp:
-                    fp.write(data['content'])
+        with tarfile.open("{}.tar.gz".format(id), mode="w:gz") as archive:
+            for name, data in gist["files"].items():
+                with tempfile.NamedTemporaryFile("w+") as fp:
+                    fp.write(data["content"])
                     fp.flush()
                     archive.add(fp.name, arcname=name)
 
@@ -371,10 +357,10 @@ class GistAPI(object):
             try:
                 self.clone(id)
                 with pushd(id):
-                    files = [f for f in os.listdir('.') if os.path.isfile(f)]
+                    files = [f for f in os.listdir(".") if os.path.isfile(f)]
                     quoted = ['"{}"'.format(f) for f in files]
-                    os.system("{} {}".format(self.editor, ' '.join(quoted)))
-                    os.system('git commit -av && git push')
+                    os.system("{} {}".format(self.editor, " ".join(quoted)))
+                    os.system("git commit -av && git push")
 
             finally:
                 shutil.rmtree(id)
@@ -390,7 +376,7 @@ class GistAPI(object):
             id:      the gist identifier
 
         """
-        return self.send(request, '{}/forks'.format(id))
+        return self.send(request, "{}/forks".format(id))
 
     @authenticate.patch
     def description(self, request, id, description):
@@ -402,10 +388,8 @@ class GistAPI(object):
             description: the new description
 
         """
-        request.data = json.dumps({
-            "description": description
-        })
-        return self.send(request, id).json()['html_url']
+        request.data = json.dumps({"description": description})
+        return self.send(request, id).json()["html_url"]
 
     def clone(self, id, name=None):
         """Clone a gist
@@ -415,9 +399,9 @@ class GistAPI(object):
             name: the name to give the cloned repo
 
         """
-        url = 'git@gist.github.com:/{}'.format(id)
+        url = "git@gist.github.com:/{}".format(id)
 
         if name is None:
-            os.system('git clone {}'.format(url))
+            os.system("git clone {}".format(url))
         else:
-            os.system('git clone {} {}'.format(url, name))
+            os.system("git clone {} {}".format(url, name))
