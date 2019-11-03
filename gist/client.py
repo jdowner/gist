@@ -127,11 +127,14 @@ import locale
 import logging
 import os
 import platform
+import shlex
 import struct
+import subprocess
 import sys
 import tempfile
 
 import docopt
+
 import gnupg
 import simplejson as json
 
@@ -225,6 +228,30 @@ def elide(txt, width=terminal_width()):
             pass
 
     return txt
+
+
+def get_value_from_command(value):
+    """Return the value of a config option, potentially by running a command
+
+    When a config option begins with a ``!`` interpret the remaining text as a
+    shell command which when run prints the config option value to stdout.
+    Otherwise return the original string.
+
+    Argument:
+        value: value of an option returned from the config file.
+
+    """
+    command = value.strip()
+    if command[0] == '!':
+        process = subprocess.Popen(shlex.quote(command[1:]),
+                                   shell=True,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
+        out, err = process.communicate()
+        if process.returncode != 0:
+            raise GistError(err)
+        return out.strip()
+    return value
 
 
 def alternative_editor(default):
@@ -339,7 +366,7 @@ def main(argv=sys.argv[1:], config=None):
     if editor is None:
         raise ValueError('Unable to find an editor.')
 
-    token = config.get('gist', 'token')
+    token = get_value_from_command(config.get('gist', 'token'))
     gapi = gist.GistAPI(token=token, editor=editor)
 
     if args['list']:

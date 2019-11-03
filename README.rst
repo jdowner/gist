@@ -83,6 +83,12 @@ The editor field is optional. If the default editor is specified through some
 other mechanism 'gist' will try to infer it. Otherwise, you can use the config
 file to ensure that 'gist' uses the editor you want it to use.
 
+If the token string begins with ``!`` the text following is interpreted as a
+shell command which, when executed, prints the token to stdout. For example::
+
+  [gist]
+  token: !gpg --decrypt github-token.gpg
+
 The configuration file must be in one of the following,
 
 ::
