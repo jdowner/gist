@@ -358,3 +358,4 @@ Thank you to the following people for contributing to 'gist'!
 * jq170727 (https://github.com/jq170727)
 * jsbronder (https://github.com/jsbronder)
 * hugsy (https://github.com/hugsy)
+* Kenneth Benzie (https://github.com/kbenzie)
