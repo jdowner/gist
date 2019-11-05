@@ -3,13 +3,6 @@
 import io
 import os
 import setuptools
-import unittest
-
-
-def discover_test_suite():
-    test_loader = unittest.TestLoader()
-    test_suite = test_loader.discover("tests", pattern="test_*.py")
-    return test_suite
 
 
 setuptools.setup(
@@ -38,10 +31,7 @@ setuptools.setup(
         )
     ],
     install_requires=["docopt", "python-gnupg>=0.4.1", "requests", "simplejson"],
-    extras_require={"dev": ["responses", "pycodestyle"]},
-    tests_require=["pycodestyle", "responses", "tox"],
     platforms=["Unix", "Windows"],
-    test_suite="setup.discover_test_suite",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Environment :: Console",
