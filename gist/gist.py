@@ -205,8 +205,7 @@ class GistAPI(object):
             for gist in response:
                 try:
                     gists.append(
-                        GistInfo(
-                            gist["id"], gist["public"], gist["description"])
+                        GistInfo(gist["id"], gist["public"], gist["description"])
                     )
 
                 except KeyError:
