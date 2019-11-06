@@ -24,7 +24,7 @@ jobs:
         pip install tox responses flake8
     - name: Lint
       run: |
-        make style
+        make lint
     - name: Test
       run: |
         make test

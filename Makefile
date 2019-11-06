@@ -21,7 +21,7 @@ uninstall:
 test:
 	$(PYTHON) -m unittest tests/test_gist.py
 
-style:
+lint:
 	flake8 $(FILES)
 
 tox:
