@@ -22,7 +22,7 @@ test:
 	$(PYTHON) -m unittest tests/test_gist.py
 
 style:
-	pycodestyle --config=./setup.cfg $(FILES)
+	flake8 $(FILES)
 
 tox:
 	tox --skip-missing-interpreters --develop
