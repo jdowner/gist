@@ -50,13 +50,7 @@ def kill_gpg_agent(homedir):
     This could be improved, but 2.1.13 was released in mid-2016 and a quick
     survey of distros using gpg-2 shows they've all moved past that point.
     """
-    args = [
-        'gpgconf',
-        '--homedir',
-        homedir,
-        '--kill',
-        'gpg-agent',
-    ]
+    args = ["gpgconf", "--homedir", homedir, "--kill", "gpg-agent"]
     try:
         subprocess.call(args)
     except OSError as e:
@@ -83,115 +77,112 @@ def b64encode(s):
     returned.
 
     """
-    return base64.b64encode(s.encode('utf-8')).decode('utf-8')
+    return base64.b64encode(s.encode("utf-8")).decode("utf-8")
 
 
 class TestGist(unittest.TestCase):
     @responses.activate
     def test_list(self):
-        responses.add(responses.GET, 'https://api.github.com/gists',
-                body=json.dumps([
-                    {
-                        'id': 1,
-                        'description': 'test-desc-A',
-                        'public': True,
-                        },
-                    {
-                        'id': 2,
-                        'description': 'test-desc-\u212C',
-                        'public': False,
-                        },
-                    ]),
-                status=200,
-                )
+        responses.add(
+            responses.GET,
+            "https://api.github.com/gists",
+            body=json.dumps(
+                [
+                    {"id": 1, "description": "test-desc-A", "public": True},
+                    {"id": 2, "description": "test-desc-\u212C", "public": False},
+                ]
+            ),
+            status=200,
+        )
 
-        gists = gist.GistAPI(token='foo').list()
+        gists = gist.GistAPI(token="foo").list()
 
         gistA = gists[0]
         gistB = gists[1]
 
         self.assertEqual(gistA.id, 1)
-        self.assertEqual(gistA.desc, 'test-desc-A')
+        self.assertEqual(gistA.desc, "test-desc-A")
         self.assertTrue(gistA.public)
 
         self.assertEqual(gistB.id, 2)
-        self.assertEqual(gistB.desc, 'test-desc-\u212C')
+        self.assertEqual(gistB.desc, "test-desc-\u212C")
         self.assertFalse(gistB.public)
 
     @responses.activate
     def test_list_empty(self):
-        responses.add(responses.GET, 'https://api.github.com/gists',
-                body="",
-                status=200,
-                )
+        responses.add(
+            responses.GET, "https://api.github.com/gists", body="", status=200
+        )
 
-        gists = gist.GistAPI(token='foo').list()
+        gists = gist.GistAPI(token="foo").list()
 
         self.assertTrue(len(gists) == 0)
 
     @responses.activate
     def test_content(self):
-        responses.add(responses.GET, 'https://api.github.com/gists/1',
-                body=json.dumps({
+        responses.add(
+            responses.GET,
+            "https://api.github.com/gists/1",
+            body=json.dumps(
+                {
                     "files": {
                         "file-A.txt": {
                             "filename": "file-A.txt",
                             "content": b64encode("test-content-A"),
-                            },
+                        },
                         "file-B.txt": {
                             "filename": "file-B.txt",
                             "content": b64encode("test-content-\u212C"),
-                            }
                         },
+                    },
                     "description": "test-gist",
                     "public": True,
                     "id": 1,
-                    }),
-                status=200,
-                )
+                }
+            ),
+            status=200,
+        )
 
-        content = gist.GistAPI(token='foo').content('1')
+        content = gist.GistAPI(token="foo").content("1")
 
         self.assertEqual(len(content), 2)
-        self.assertTrue('file-A.txt' in content)
-        self.assertTrue('file-B.txt' in content)
-        self.assertEqual(content['file-A.txt'], 'test-content-A')
-        self.assertEqual(content['file-B.txt'], 'test-content-\u212C')
+        self.assertTrue("file-A.txt" in content)
+        self.assertTrue("file-B.txt" in content)
+        self.assertEqual(content["file-A.txt"], "test-content-A")
+        self.assertEqual(content["file-B.txt"], "test-content-\u212C")
 
     @responses.activate
     def test_create(self):
         def request_handler(request):
             data = json.loads(request.body)
-            self.assertEqual(len(data['files']), 2)
-            self.assertTrue('test-file-A' in data['files'])
+            self.assertEqual(len(data["files"]), 2)
+            self.assertTrue("test-file-A" in data["files"])
 
-            content = {k: v['content'] for k, v in data['files'].items()}
+            content = {k: v["content"] for k, v in data["files"].items()}
 
-            self.assertEqual(content['test-file-A'], 'test-content-A')
-            self.assertEqual(content['test-file-B'], 'test-content-\u212C')
+            self.assertEqual(content["test-file-A"], "test-content-A")
+            self.assertEqual(content["test-file-B"], "test-content-\u212C")
 
             status = 200
             headers = {}
-            body = json.dumps({
-                'html_url': 'https://gist.github.com/gists/1'
-                })
+            body = json.dumps({"html_url": "https://gist.github.com/gists/1"})
             return status, headers, body
 
         responses.add_callback(
-                responses.POST,
-                'https://api.github.com/gists',
-                callback=request_handler,
-                content_type='application/json',
-                )
+            responses.POST,
+            "https://api.github.com/gists",
+            callback=request_handler,
+            content_type="application/json",
+        )
 
         public = True
-        desc = 'test-desc'
+        desc = "test-desc"
         files = {
-                'test-file-A': {'content': 'test-content-A'},
-                'test-file-B': {'content': 'test-content-\u212C'},
-                }
+            "test-file-A": {"content": "test-content-A"},
+            "test-file-B": {"content": "test-content-\u212C"},
+        }
 
-        gist.GistAPI(token='foo').create(desc, files, public)
+        gist.GistAPI(token="foo").create(desc, files, public)
 
 
 class TestGistCLI(unittest.TestCase):
@@ -199,8 +190,8 @@ class TestGistCLI(unittest.TestCase):
         os.environ["EDITOR"] = "gist-placeholder"
 
         self.config = configparser.ConfigParser()
-        self.config.add_section('gist')
-        self.config.set('gist', 'token', 'foo')
+        self.config.add_section("gist")
+        self.config.set("gist", "token", "foo")
 
     def command_response(self, cmd):
         buf = StringIO()
@@ -211,76 +202,76 @@ class TestGistCLI(unittest.TestCase):
 
     @responses.activate
     def test_list(self):
-        responses.add(responses.GET, 'https://api.github.com/gists',
-                body=json.dumps([
-                    {
-                        'id': 1,
-                        'description': 'test-desc-A',
-                        'public': True,
-                        },
-                    {
-                        'id': 2,
-                        'description': 'test-desc-\u212C',
-                        'public': False,
-                        },
-                    ]),
-                status=200,
-                )
+        responses.add(
+            responses.GET,
+            "https://api.github.com/gists",
+            body=json.dumps(
+                [
+                    {"id": 1, "description": "test-desc-A", "public": True},
+                    {"id": 2, "description": "test-desc-\u212C", "public": False},
+                ]
+            ),
+            status=200,
+        )
 
-        gists = self.command_response('list')
+        gists = self.command_response("list")
         gistA = gists[0]
         gistB = gists[1]
 
-        self.assertEqual(gistA, '1 + test-desc-A')
-        self.assertEqual(gistB, '2 - test-desc-\u212C')
+        self.assertEqual(gistA, "1 + test-desc-A")
+        self.assertEqual(gistB, "2 - test-desc-\u212C")
 
     @responses.activate
     def test_content(self):
         def b64encode(s):
-            return base64.b64encode(s.encode('utf-8')).decode('utf-8')
+            return base64.b64encode(s.encode("utf-8")).decode("utf-8")
 
-        responses.add(responses.GET, 'https://api.github.com/gists/1',
-                body=json.dumps({
+        responses.add(
+            responses.GET,
+            "https://api.github.com/gists/1",
+            body=json.dumps(
+                {
                     "files": {
                         "file-A.txt": {
                             "filename": "file-A.txt",
                             "content": b64encode("test-content-A"),
-                            },
+                        },
                         "file-B.txt": {
                             "filename": "file-B.txt",
                             "content": b64encode("test-content-\u212C"),
-                            }
                         },
+                    },
                     "description": "test-gist",
                     "public": True,
                     "id": 1,
-                    }),
-                status=200,
-                )
+                }
+            ),
+            status=200,
+        )
 
-        lines = self.command_response('content 1')
+        lines = self.command_response("content 1")
 
-        self.assertIn('file-A.txt:', lines)
-        self.assertIn('test-content-A', lines)
-        self.assertIn('file-B.txt:', lines)
-        self.assertIn('test-content-\u212C', lines)
+        self.assertIn("file-A.txt:", lines)
+        self.assertIn("test-content-A", lines)
+        self.assertIn("file-B.txt:", lines)
+        self.assertIn("test-content-\u212C", lines)
 
 
 @unittest.skip("failing in github actions because the expected tty is missing")
 class TestGistGPG(unittest.TestCase):
-    gnupghome = os.path.abspath('./tests/gnupg')
+    gnupghome = os.path.abspath("./tests/gnupg")
 
     def setUp(self):
         os.environ["EDITOR"] = "gist-placeholder"
 
         self.gpg = gnupg.GPG(gnupghome=self.gnupghome, use_agent=True)
-        self.fingerprint = self.gpg.list_keys()[0]['fingerprint']
+        self.fingerprint = self.gpg.list_keys()[0]["fingerprint"]
 
         self.config = configparser.ConfigParser()
-        self.config.add_section('gist')
-        self.config.set('gist', 'token', 'foo')
-        self.config.set('gist', 'gnupg-homedir', self.gnupghome)
-        self.config.set('gist', 'gnupg-fingerprint', self.fingerprint)
+        self.config.add_section("gist")
+        self.config.set("gist", "token", "foo")
+        self.config.set("gist", "gnupg-homedir", self.gnupghome)
+        self.config.set("gist", "gnupg-fingerprint", self.fingerprint)
 
     @classmethod
     def tearDownClass(cls):
@@ -296,15 +287,15 @@ class TestGistGPG(unittest.TestCase):
 
     def encrypt(self, text):
         """Return the text as an encrypted string"""
-        data = text.encode('utf-8')
+        data = text.encode("utf-8")
         crypt = self.gpg.encrypt(data, self.fingerprint)
-        return crypt.data.decode('utf-8')
+        return crypt.data.decode("utf-8")
 
     def decrypt(self, text):
         """Return the text as a decrypted string"""
-        data = text.encode('utf-8')
+        data = text.encode("utf-8")
         crypt = self.gpg.decrypt(data)
-        return crypt.data.decode('utf-8')
+        return crypt.data.decode("utf-8")
 
     @responses.activate
     def test_create_from_file(self):
@@ -313,32 +304,31 @@ class TestGistGPG(unittest.TestCase):
         properly encrypted.
 
         """
+
         def request_handler(request):
             # Decrypt the content of the request and check that it matches the
             # original content.
             body = json.loads(request.body)
-            data = list(body['files'].values())
-            text = self.decrypt(data[0]['content'])
-            self.assertIn(u'test-content-\u212C', text)
+            data = list(body["files"].values())
+            text = self.decrypt(data[0]["content"])
+            self.assertIn(u"test-content-\u212C", text)
 
             status = 200
             headers = {}
-            body = json.dumps({
-                'html_url': 'https://gist.github.com/gists/1'
-                })
+            body = json.dumps({"html_url": "https://gist.github.com/gists/1"})
             return status, headers, body
 
         responses.add_callback(
-                responses.POST,
-                'https://api.github.com/gists',
-                callback=request_handler,
-                content_type='application/json',
-                )
+            responses.POST,
+            "https://api.github.com/gists",
+            callback=request_handler,
+            content_type="application/json",
+        )
 
         # Create a temporary file and write a test message to it
         with tempfile.NamedTemporaryFile("wb") as fp:
             text = u"test-content-\u212C"
-            fp.write(text.encode('utf-8'))
+            fp.write(text.encode("utf-8"))
             fp.flush()
 
             cmd = 'create --encrypt "test-desc" {}'.format(fp.name)
@@ -351,34 +341,39 @@ class TestGistGPG(unittest.TestCase):
         properly decrypted.
 
         """
+
         def b64encrypt(content):
             return b64encode(self.encrypt(content))
 
-        responses.add(responses.GET, 'https://api.github.com/gists/1',
-                body=json.dumps({
+        responses.add(
+            responses.GET,
+            "https://api.github.com/gists/1",
+            body=json.dumps(
+                {
                     "files": {
                         "file-A.txt": {
                             "filename": "file-A.txt",
-                            "content": b64encrypt(u'test-content-A'),
-                            },
+                            "content": b64encrypt(u"test-content-A"),
+                        },
                         "file-B.txt": {
                             "filename": "file-B.txt",
-                            "content": b64encrypt(u'test-content-\u212C'),
-                            },
+                            "content": b64encrypt(u"test-content-\u212C"),
                         },
+                    },
                     "description": "test-gist",
                     "public": True,
                     "id": 1,
-                    }),
-                status=200,
-                )
+                }
+            ),
+            status=200,
+        )
 
-        lines = self.command_response('content 1 --decrypt')
+        lines = self.command_response("content 1 --decrypt")
 
-        self.assertIn(u'file-A.txt (decrypted):', lines)
-        self.assertIn(u'test-content-A', lines)
-        self.assertIn(u'file-B.txt (decrypted):', lines)
-        self.assertIn(u'test-content-\u212C', lines)
+        self.assertIn(u"file-A.txt (decrypted):", lines)
+        self.assertIn(u"test-content-A", lines)
+        self.assertIn(u"file-B.txt (decrypted):", lines)
+        self.assertIn(u"test-content-\u212C", lines)
 
     def test_gnupg(self):
         """
