@@ -265,6 +265,22 @@ class TestGistCLI(unittest.TestCase):
         self.assertIn('file-B.txt:', lines)
         self.assertIn('test-content-\u212C', lines)
 
+    def test_get_value_from_command(self):
+        """
+        Ensure that values which start with ``!`` are treated as commands and
+        return the string printed to stdout by the command, otherwise ensure
+        that the value passed to the function is returned.
+        """
+        self.assertEqual(
+            'magic token',
+            gist.client.get_value_from_command('!echo "\nmagic token"'))
+        self.assertEqual(
+            'magic token',
+            gist.client.get_value_from_command(' !echo "magic token\n"'))
+        self.assertEqual(
+            'magic token',
+            gist.client.get_value_from_command('magic token'))
+
 
 class TestGistGPG(unittest.TestCase):
     gnupghome = os.path.abspath('./tests/gnupg')

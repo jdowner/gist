@@ -243,14 +243,13 @@ def get_value_from_command(value):
     """
     command = value.strip()
     if command[0] == '!':
-        process = subprocess.Popen(shlex.quote(command[1:]),
-                                   shell=True,
+        process = subprocess.Popen(shlex.split(command[1:]),
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
         out, err = process.communicate()
         if process.returncode != 0:
             raise GistError(err)
-        return out.strip()
+        return out.decode().strip()
     return value
 
 
