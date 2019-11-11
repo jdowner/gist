@@ -127,6 +127,7 @@ import locale
 import logging
 import os
 import platform
+import re
 import shlex
 import struct
 import subprocess
@@ -167,6 +168,18 @@ class GistError(Exception):
     def __init__(self, msg):
         super(GistError, self).__init__(msg)
         self.msg = msg
+
+
+class GistMissingTokenError(GistError):
+    pass
+
+
+class GistEmptyTokenError(GistError):
+    pass
+
+
+class GistInvalidTokenError(GistError):
+    pass
 
 
 class FileInfo(collections.namedtuple("FileInfo", "name content")):
@@ -251,6 +264,30 @@ def get_value_from_command(value):
             raise GistError(err)
         return out.decode().strip()
     return value
+
+
+def get_personal_access_token(config):
+    """Returns the users personal access token
+
+    Argument:
+        config: a configuration object
+
+    """
+    try:
+        value = config.get("gist", "token").strip()
+        if not value:
+            raise GistEmptyTokenError("An empty token is not valid")
+
+    except configparser.NoOptionError:
+        raise GistMissingTokenError("Missing 'token' field in configuration")
+
+    token = get_value_from_command(value)
+
+    match = re.match(r"[0-9a-fA-F]+$", token)
+    if match is None:
+        raise GistInvalidTokenError("Invalid personal access token")
+
+    return token
 
 
 def alternative_editor(default):
@@ -365,7 +402,7 @@ def main(argv=sys.argv[1:], config=None):
     if editor is None:
         raise ValueError('Unable to find an editor.')
 
-    token = get_value_from_command(config.get('gist', 'token'))
+    token = get_personal_access_token(config)
     gapi = gist.GistAPI(token=token, editor=editor)
 
     if args['list']:

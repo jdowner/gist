@@ -281,6 +281,43 @@ class TestGistCLI(unittest.TestCase):
             'magic token',
             gist.client.get_value_from_command('magic token'))
 
+    def test_get_personal_access_token(self):
+        config = configparser.ConfigParser()
+        config.add_section("gist")
+
+        # Check that a missing token raises an exception
+        with self.assertRaises(gist.client.GistMissingTokenError):
+            gist.client.get_personal_access_token(config)
+
+        # Check that an empty token raises an exception
+        config.set("gist", "token", "")
+        with self.assertRaises(gist.client.GistEmptyTokenError):
+            gist.client.get_personal_access_token(config)
+
+        # Check that an empty token (whitespace) raises an exception
+        config.set("gist", "token", "   ")
+        with self.assertRaises(gist.client.GistEmptyTokenError):
+            gist.client.get_personal_access_token(config)
+
+        # Check that gaps between valid strings raise an exception
+        config.set("gist", "token", "123 123")
+        with self.assertRaises(gist.client.GistInvalidTokenError):
+            gist.client.get_personal_access_token(config)
+
+        # Check that invalid characters raise an exception
+        config.set("gist", "token", "foo")
+        with self.assertRaises(gist.client.GistInvalidTokenError):
+            gist.client.get_personal_access_token(config)
+
+        # Check that a string of valid characters, with whitespace at either end, does
+        # not raise an error
+        config.set("gist", "token", "   123   ")
+        gist.client.get_personal_access_token(config)
+
+        # Check that a string of valid characters does not raise an exception
+        config.set("gist", "token", "123abcABC0987")
+        gist.client.get_personal_access_token(config)
+
 
 class TestGistGPG(unittest.TestCase):
     gnupghome = os.path.abspath('./tests/gnupg')
