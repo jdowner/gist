@@ -105,7 +105,7 @@ class TestGist(unittest.TestCase):
                 status=200,
                 )
 
-        gists = gist.GistAPI(token='foo').list()
+        gists = gist.GistAPI(token="f00").list()
 
         gistA = gists[0]
         gistB = gists[1]
@@ -125,7 +125,7 @@ class TestGist(unittest.TestCase):
                 status=200,
                 )
 
-        gists = gist.GistAPI(token='foo').list()
+        gists = gist.GistAPI(token="f00").list()
 
         self.assertTrue(len(gists) == 0)
 
@@ -150,7 +150,7 @@ class TestGist(unittest.TestCase):
                 status=200,
                 )
 
-        content = gist.GistAPI(token='foo').content('1')
+        content = gist.GistAPI(token="f00").content("1")
 
         self.assertEqual(len(content), 2)
         self.assertTrue('file-A.txt' in content)
@@ -191,7 +191,7 @@ class TestGist(unittest.TestCase):
                 'test-file-B': {'content': 'test-content-\u212C'},
                 }
 
-        gist.GistAPI(token='foo').create(desc, files, public)
+        gist.GistAPI(token="f00").create(desc, files, public)
 
 
 class TestGistCLI(unittest.TestCase):
@@ -199,8 +199,8 @@ class TestGistCLI(unittest.TestCase):
         os.environ["EDITOR"] = "gist-placeholder"
 
         self.config = configparser.ConfigParser()
-        self.config.add_section('gist')
-        self.config.set('gist', 'token', 'foo')
+        self.config.add_section("gist")
+        self.config.set("gist", "token", "f00")
 
     def command_response(self, cmd):
         buf = StringIO()
@@ -292,10 +292,10 @@ class TestGistGPG(unittest.TestCase):
         self.fingerprint = self.gpg.list_keys()[0]['fingerprint']
 
         self.config = configparser.ConfigParser()
-        self.config.add_section('gist')
-        self.config.set('gist', 'token', 'foo')
-        self.config.set('gist', 'gnupg-homedir', self.gnupghome)
-        self.config.set('gist', 'gnupg-fingerprint', self.fingerprint)
+        self.config.add_section("gist")
+        self.config.set("gist", "token", "f00")
+        self.config.set("gist", "gnupg-homedir", self.gnupghome)
+        self.config.set("gist", "gnupg-fingerprint", self.fingerprint)
 
     @classmethod
     def tearDownClass(cls):
