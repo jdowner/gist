@@ -105,7 +105,7 @@ class TestGist(unittest.TestCase):
                 status=200,
                 )
 
-        gists = gist.GistAPI(token='foo').list()
+        gists = gist.GistAPI(token="f00").list()
 
         gistA = gists[0]
         gistB = gists[1]
@@ -125,7 +125,7 @@ class TestGist(unittest.TestCase):
                 status=200,
                 )
 
-        gists = gist.GistAPI(token='foo').list()
+        gists = gist.GistAPI(token="f00").list()
 
         self.assertTrue(len(gists) == 0)
 
@@ -150,7 +150,7 @@ class TestGist(unittest.TestCase):
                 status=200,
                 )
 
-        content = gist.GistAPI(token='foo').content('1')
+        content = gist.GistAPI(token="f00").content("1")
 
         self.assertEqual(len(content), 2)
         self.assertTrue('file-A.txt' in content)
@@ -191,7 +191,7 @@ class TestGist(unittest.TestCase):
                 'test-file-B': {'content': 'test-content-\u212C'},
                 }
 
-        gist.GistAPI(token='foo').create(desc, files, public)
+        gist.GistAPI(token="f00").create(desc, files, public)
 
 
 class TestGistCLI(unittest.TestCase):
@@ -199,8 +199,8 @@ class TestGistCLI(unittest.TestCase):
         os.environ["EDITOR"] = "gist-placeholder"
 
         self.config = configparser.ConfigParser()
-        self.config.add_section('gist')
-        self.config.set('gist', 'token', 'foo')
+        self.config.add_section("gist")
+        self.config.set("gist", "token", "f00")
 
     def command_response(self, cmd):
         buf = StringIO()
@@ -281,6 +281,43 @@ class TestGistCLI(unittest.TestCase):
             'magic token',
             gist.client.get_value_from_command('magic token'))
 
+    def test_get_personal_access_token(self):
+        config = configparser.ConfigParser()
+        config.add_section("gist")
+
+        # Check that a missing token raises an exception
+        with self.assertRaises(gist.client.GistMissingTokenError):
+            gist.client.get_personal_access_token(config)
+
+        # Check that an empty token raises an exception
+        config.set("gist", "token", "")
+        with self.assertRaises(gist.client.GistEmptyTokenError):
+            gist.client.get_personal_access_token(config)
+
+        # Check that an empty token (whitespace) raises an exception
+        config.set("gist", "token", "   ")
+        with self.assertRaises(gist.client.GistEmptyTokenError):
+            gist.client.get_personal_access_token(config)
+
+        # Check that gaps between valid strings raise an exception
+        config.set("gist", "token", "123 123")
+        with self.assertRaises(gist.client.GistInvalidTokenError):
+            gist.client.get_personal_access_token(config)
+
+        # Check that invalid characters raise an exception
+        config.set("gist", "token", "foo")
+        with self.assertRaises(gist.client.GistInvalidTokenError):
+            gist.client.get_personal_access_token(config)
+
+        # Check that a string of valid characters, with whitespace at either end, does
+        # not raise an error
+        config.set("gist", "token", "   123   ")
+        gist.client.get_personal_access_token(config)
+
+        # Check that a string of valid characters does not raise an exception
+        config.set("gist", "token", "123abcABC0987")
+        gist.client.get_personal_access_token(config)
+
 
 class TestGistGPG(unittest.TestCase):
     gnupghome = os.path.abspath('./tests/gnupg')
@@ -292,10 +329,10 @@ class TestGistGPG(unittest.TestCase):
         self.fingerprint = self.gpg.list_keys()[0]['fingerprint']
 
         self.config = configparser.ConfigParser()
-        self.config.add_section('gist')
-        self.config.set('gist', 'token', 'foo')
-        self.config.set('gist', 'gnupg-homedir', self.gnupghome)
-        self.config.set('gist', 'gnupg-fingerprint', self.fingerprint)
+        self.config.add_section("gist")
+        self.config.set("gist", "token", "f00")
+        self.config.set("gist", "gnupg-homedir", self.gnupghome)
+        self.config.set("gist", "gnupg-fingerprint", self.fingerprint)
 
     @classmethod
     def tearDownClass(cls):
