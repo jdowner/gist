@@ -110,10 +110,8 @@ class authenticate(object):
         """
         try:
             url = "https://api.github.com/gists"
-            params = {"access_token": self.instance.token}
-            request = requests.Request(
-                self.method, url, headers=self.headers, params=params
-            )
+            self.headers["Authorization"] = "token {}".format(self.instance.token)
+            request = requests.Request(self.method, url, headers=self.headers)
             return self.func(self.instance, request, *args, **kwargs)
         finally:
             self.instance = None
