@@ -110,10 +110,8 @@ class authenticate(object):
         """
         try:
             url = "https://api.github.com/gists"
-            params = {"access_token": self.instance.token}
-            request = requests.Request(
-                self.method, url, headers=self.headers, params=params
-            )
+            self.headers["Authorization"] = "token " + self.instance.token
+            request = requests.Request(self.method, url, headers=self.headers)
             return self.func(self.instance, request, *args, **kwargs)
         finally:
             self.instance = None
@@ -181,8 +179,9 @@ class GistAPI(object):
                 "Accept-Encoding": "identity, deflate, compress, gzip",
                 "User-Agent": "python-requests/1.2.0",
                 "Accept": "application/vnd.github.v3.base64",
+                "Authorization": "token " + self.token,
             },
-            params={"access_token": self.token, "per_page": 100},
+            params={"per_page": 100},
         )
 
         # Github provides a 'link' header that contains information to
