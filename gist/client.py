@@ -542,7 +542,9 @@ def main(argv=sys.argv[1:], config=None):
 
             else:
                 logger.debug('action: - reading from editor')
-                filename = args.get("<filename>", "file1.txt")
+
+                filename = args["<filename>"]
+                filename = "file1.txt" if filename is None else filename
 
                 # Determine whether the temporary file should be deleted
                 if config.has_option('gist', 'delete-tempfiles'):
@@ -563,7 +565,10 @@ def main(argv=sys.argv[1:], config=None):
 
         else:
             logger.debug('action: - reading from stdin')
-            filename = args.get("<filename>", "file1.txt")
+
+            filename = args["<filename>"]
+            filename = "file1.txt" if filename is None else filename
+
             files.append(FileInfo(filename, sys.stdin.read()))
 
         # Ensure that there are no empty files
