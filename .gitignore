@@ -59,3 +59,7 @@ bin/gistc
 tests/gnupg/*
 
 .vscode
+.envrc
+.python-version
+.vimlocal
+tags
