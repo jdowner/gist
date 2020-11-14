@@ -59,3 +59,4 @@ bin/gistc
 tests/gnupg/*
 
 .vscode
+.envrc
