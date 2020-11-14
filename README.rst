@@ -9,6 +9,10 @@ them.
 .. image:: https://travis-ci.org/jdowner/gist.svg?branch=master
     :target: https://travis-ci.org/jdowner/gist
 
+Requirements
+--------------------------------------------------
+Python 3.5, 3.6 or 3.7 is required.
+
 Installation
 --------------------------------------------------
 
@@ -16,13 +20,13 @@ To install 'gist' you can either use,
 
 ::
 
-  $ sudo pip install python-gist
+  $ sudo pip3 install python-gist
 
 or,
 
 ::
 
-  $ sudo python setup.py install
+  $ sudo python3 setup.py install
 
 or,
 
@@ -63,7 +67,7 @@ To check that 'gist' is operating correctly, you can run the unit tests with,
 
 ::
 
-  $ python setup.py test
+  $ python3 setup.py test
 
 
 Getting started
