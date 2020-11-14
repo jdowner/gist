@@ -60,3 +60,4 @@ tests/gnupg/*
 
 .vscode
 .envrc
+.python-version
