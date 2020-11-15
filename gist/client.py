@@ -185,6 +185,10 @@ class GistInvalidTokenError(GistError):
     pass
 
 
+class UserError(Exception):
+    pass
+
+
 class FileInfo(collections.namedtuple("FileInfo", "name content")):
     pass
 
@@ -805,7 +809,16 @@ def create_gist_help_parser(subparser):
 def create_gist_parser():
     """Create main parser for 'gist' commands"""
 
-    parser = argparse.ArgumentParser()
+    # Subclass the ArgumentParser so that we can override the 'error' function
+    class Parser(argparse.ArgumentParser):
+        def __init__(self, *args, **kwargs):
+            kwargs["add_help"] = False
+            super().__init__(*args, **kwargs)
+
+        def error(self, message):
+            raise UserError(message)
+
+    parser = Parser()
     subparser = parser.add_subparsers()
 
     create_gist_list_parser(subparser)
@@ -826,51 +839,53 @@ def create_gist_parser():
 
 
 def main(argv=sys.argv[1:], config=None):
+    try:
 
-    # Setup logging
-    fmt = "%(created).3f %(levelname)s[%(name)s] %(message)s"
-    logging.basicConfig(format=fmt)
+        # Setup logging
+        fmt = "%(created).3f %(levelname)s[%(name)s] %(message)s"
+        logging.basicConfig(format=fmt)
 
-    # Read in the configuration file
-    if config is None:
-        config = configparser.ConfigParser()
-        config_path = os.path.expanduser(os.sep.join(['~', '.gist']))
-        config_path = alternative_config(config_path)
-        config_path = xdg_data_config(config_path)
+        # Read in the configuration file
+        if config is None:
+            config = configparser.ConfigParser()
+            config_path = os.path.expanduser(os.sep.join(['~', '.gist']))
+            config_path = alternative_config(config_path)
+            config_path = xdg_data_config(config_path)
+            try:
+                with open(config_path) as fp:
+                    config.read_file(fp)
+            except Exception as e:
+                message = 'Unable to load configuration file: {0}'.format(e)
+                raise UserError(message)
+
         try:
-            with open(config_path) as fp:
-                config.read_file(fp)
-        except Exception as e:
-            message = 'Unable to load configuration file: {0}'.format(e)
-            raise ValueError(message)
+            log_level = config.get('gist', 'log-level').upper()
+            logging.getLogger('gist').setLevel(log_level)
+        except Exception:
+            logging.getLogger('gist').setLevel(logging.ERROR)
 
-    try:
-        log_level = config.get('gist', 'log-level').upper()
-        logging.getLogger('gist').setLevel(log_level)
-    except Exception:
-        logging.getLogger('gist').setLevel(logging.ERROR)
+        # Determine the editor to use
+        editor = None
+        editor = alternative_editor(editor)
+        editor = environment_editor(editor)
+        editor = configuration_editor(config, editor)
 
-    # Determine the editor to use
-    editor = None
-    editor = alternative_editor(editor)
-    editor = environment_editor(editor)
-    editor = configuration_editor(config, editor)
+        if editor is None:
+            raise UserError('Unable to find an editor.')
 
-    if editor is None:
-        raise ValueError('Unable to find an editor.')
+        token = get_personal_access_token(config)
+        gapi = gist.GistAPI(token=token, editor=editor)
 
-    token = get_personal_access_token(config)
-    gapi = gist.GistAPI(token=token, editor=editor)
+        # Parser command line arguments
+        parser = create_gist_parser()
+        args = parser.parse_args(argv)
+        args.func(gapi, args, config, editor)
 
-    # Parser command line arguments
-    parser = create_gist_parser()
-    args = parser.parse_args(argv)
-    args.func(gapi, args, config, editor)
-
-
-if __name__ == "__main__":
-    try:
-        main()
+    except UserError as e:
+        sys.stderr.write(u"ERROR: {}\n".format(str(e)))
+        sys.stderr.write(u"\n{}".format(__doc__))
+        sys.stderr.flush()
+        sys.exit(1)
     except GistError as e:
         sys.stderr.write(u"GIST: {}\n".format(e.msg))
         sys.stderr.flush()
@@ -878,3 +893,7 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error(str(e))
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
