@@ -110,7 +110,8 @@ class authenticate(object):
         """
         try:
             url = "https://api.github.com/gists"
-            self.headers["Authorization"] = "token {}".format(self.instance.token)
+            token = self.instance.token
+            self.headers["Authorization"] = "token {}".format(token)
             request = requests.Request(self.method, url, headers=self.headers)
             return self.func(self.instance, request, *args, **kwargs)
         finally:
@@ -204,7 +205,10 @@ class GistAPI(object):
             for gist in response:
                 try:
                     gists.append(
-                        GistInfo(gist["id"], gist["public"], gist["description"])
+                        GistInfo(gist["id"],
+                                 gist["public"],
+                                 gist["description"],
+                                 )
                     )
 
                 except KeyError:
