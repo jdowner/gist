@@ -5,6 +5,7 @@ Name:
     gist
 
 Usage:
+    gist help
     gist list
     gist edit <id>
     gist description <id> <desc>
@@ -24,6 +25,9 @@ Description:
     gists.
 
 Commands:
+    help
+        Shows this documentation.
+
     create
         Create a new gist. A gist can be created in several ways. The content
         of the gist can be piped to the gist,
@@ -121,6 +125,7 @@ Commands:
 
 """
 
+import argparse
 import codecs
 import collections
 import locale
@@ -133,8 +138,6 @@ import struct
 import subprocess
 import sys
 import tempfile
-
-import docopt
 
 import gnupg
 import simplejson as json
@@ -179,6 +182,10 @@ class GistEmptyTokenError(GistError):
 
 
 class GistInvalidTokenError(GistError):
+    pass
+
+
+class UserError(Exception):
     pass
 
 
@@ -363,246 +370,522 @@ def xdg_data_config(default):
     return default
 
 
-def main(argv=sys.argv[1:], config=None):
-    args = docopt.docopt(
-            __doc__,
-            argv=argv,
-            version='gist-v{}'.format(gist.__version__),
-            )
+def handle_gist_list(gapi, args, *vargs):
+    """Handle 'gist list' command
 
-    # Setup logging
-    fmt = "%(created).3f %(levelname)s[%(name)s] %(message)s"
-    logging.basicConfig(format=fmt)
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
 
-    # Read in the configuration file
-    if config is None:
-        config = configparser.ConfigParser()
-        config_path = os.path.expanduser(os.sep.join(['~', '.gist']))
-        config_path = alternative_config(config_path)
-        config_path = xdg_data_config(config_path)
+    """
+    logger.debug(u'action: list')
+    gists = gapi.list()
+    for info in gists:
+        public = '+' if info.public else '-'
+        desc = '' if info.desc is None else info.desc
+        line = u'{} {} {}'.format(info.id, public, desc)
         try:
-            with open(config_path) as fp:
-                config.read_file(fp)
-        except Exception as e:
-            message = 'Unable to load configuration file: {0}'.format(e)
-            raise ValueError(message)
+            print(elide(line))
+        except UnicodeEncodeError:
+            logger.error('unable to write gist {}'.format(info.id))
 
-    try:
-        log_level = config.get('gist', 'log-level').upper()
-        logging.getLogger('gist').setLevel(log_level)
-    except Exception:
-        logging.getLogger('gist').setLevel(logging.ERROR)
 
-    # Determine the editor to use
-    editor = None
-    editor = alternative_editor(editor)
-    editor = environment_editor(editor)
-    editor = configuration_editor(config, editor)
+def handle_gist_edit(gapi, args):
+    """Handle 'gist edit' command
 
-    if editor is None:
-        raise ValueError('Unable to find an editor.')
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
 
-    token = get_personal_access_token(config)
-    gapi = gist.GistAPI(token=token, editor=editor)
+    """
+    logger.debug(u'action: edit')
+    logger.debug(u'action: - {}'.format(args.id))
+    gapi.edit(args.id)
 
-    if args['list']:
-        logger.debug(u'action: list')
-        gists = gapi.list()
-        for info in gists:
-            public = '+' if info.public else '-'
-            desc = '' if info.desc is None else info.desc
-            line = u'{} {} {}'.format(info.id, public, desc)
-            try:
-                print(elide(line))
-            except UnicodeEncodeError:
-                logger.error('unable to write gist {}'.format(info.id))
-        return
 
-    if args['info']:
-        gist_id = args['<id>']
-        logger.debug(u'action: info')
+def handle_gist_description(gapi, args, *vargs):
+    """Handle 'gist description' command
+
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
+
+    """
+    logger.debug(u'action: description')
+    logger.debug(u'action: - {}'.format(args.id))
+    logger.debug(u'action: - {}'.format(args.desc))
+    gapi.description(args.id, args.desc)
+
+
+def handle_gist_info(gapi, args, *vargs):
+    """Handle 'gist info' command
+
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
+
+    """
+    logger.debug(u'action: info')
+    logger.debug(u'action: - {}'.format(args.id))
+    info = gapi.info(args.id)
+    print(json.dumps(info, indent=2))
+
+
+def handle_gist_fork(gapi, args, *vargs):
+    """Handle 'gist fork' command
+
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
+
+    """
+    logger.debug(u'action: fork')
+    logger.debug(u'action: - {}'.format(args.id))
+    info = gapi.fork(args.id)
+
+
+def handle_gist_files(gapi, args, *vargs):
+    """Handle 'gist files' command
+
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
+
+    """
+    logger.debug(u'action: files')
+    logger.debug(u'action: - {}'.format(args.id))
+    for f in gapi.files(args.id):
+        print(f)
+
+
+def handle_gist_delete(gapi, args, *vargs):
+    """Handle 'gist delete' command
+
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
+
+    """
+    logger.debug(u'action: delete')
+    for gist_id in args.ids:
         logger.debug(u'action: - {}'.format(gist_id))
-        info = gapi.info(gist_id)
-        print(json.dumps(info, indent=2))
-        return
+        gapi.delete(gist_id)
 
-    if args['edit']:
-        gist_id = args['<id>']
-        logger.debug(u'action: edit')
-        logger.debug(u'action: - {}'.format(gist_id))
-        gapi.edit(gist_id)
-        return
 
-    if args['description']:
-        gist_id = args['<id>']
-        description = args['<desc>']
-        logger.debug(u'action: description')
-        logger.debug(u'action: - {}'.format(gist_id))
-        logger.debug(u'action: - {}'.format(description))
-        gapi.description(gist_id, description)
-        return
+def handle_gist_archive(gapi, args, *vargs):
+    """Handle 'gist archive' command
 
-    if args['fork']:
-        gist_id = args['<id>']
-        logger.debug(u'action: fork')
-        logger.debug(u'action: - {}'.format(gist_id))
-        info = gapi.fork(gist_id)
-        return
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
 
-    if args['clone']:
-        gist_id = args['<id>']
-        gist_name = args['<name>']
-        logger.debug(u'action: clone')
-        logger.debug(u'action: - {} as {}'.format(gist_id, gist_name))
-        gapi.clone(gist_id, gist_name)
-        return
+    """
+    logger.debug(u'action: archive')
+    logger.debug(u'action: - {}'.format(args.id))
+    gapi.archive(args.id)
 
-    if args['content']:
-        gist_id = args['<id>']
-        logger.debug(u'action: content')
-        logger.debug(u'action: - {}'.format(gist_id))
 
-        content = gapi.content(gist_id)
-        gist_file = content.get(args['<filename>'])
+def handle_gist_content(gapi, args, config, *vargs):
+    """Handle 'gist content' command
 
-        if args['--decrypt']:
-            if not config.has_option('gist', 'gnupg-homedir'):
-                raise GistError('gnupg-homedir missing from config file')
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
+        config: configuration data
 
-            homedir = config.get('gist', 'gnupg-homedir')
-            logger.debug(u'action: - {}'.format(homedir))
+    """
+    logger.debug(u'action: content')
+    logger.debug(u'action: - {}'.format(args.id))
 
-            gpg = gnupg.GPG(gnupghome=homedir, use_agent=True)
-            if gist_file is not None:
-                print(gpg.decrypt(gist_file).data.decode('utf-8'))
-            else:
-                for name, lines in content.items():
-                    lines = gpg.decrypt(lines).data.decode('utf-8')
-                    print(u'{} (decrypted):\n{}\n'.format(name, lines))
+    content = gapi.content(args.id)
+    gist_file = content.get(args.filename)
+
+    if args.decrypt:
+        if not config.has_option('gist', 'gnupg-homedir'):
+            raise GistError('gnupg-homedir missing from config file')
+
+        homedir = config.get('gist', 'gnupg-homedir')
+        logger.debug(u'action: - {}'.format(homedir))
+
+        gpg = gnupg.GPG(gnupghome=homedir, use_agent=True)
+        if gist_file is not None:
+            print(gpg.decrypt(gist_file).data.decode('utf-8'))
+        else:
+            for name, lines in content.items():
+                lines = gpg.decrypt(lines).data.decode('utf-8')
+                print(u'{} (decrypted):\n{}\n'.format(name, lines))
+
+    else:
+        if gist_file is not None:
+            print(gist_file)
+        else:
+            for name, lines in content.items():
+                print(u'{}:\n{}\n'.format(name, lines))
+
+
+def handle_gist_create(gapi, args, config, editor, *vargs):
+    """Handle 'gist create' command
+
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
+        config: configuration data
+        editor: editor command to use to create gist content
+
+    """
+    logger.debug('action: create')
+
+    # If encryption is selected, perform an initial check to make sure that
+    # it is possible before processing any data.
+    if args.encrypt:
+        if not config.has_option('gist', 'gnupg-homedir'):
+            raise GistError('gnupg-homedir missing from config file')
+
+        if not config.has_option('gist', 'gnupg-fingerprint'):
+            raise GistError('gnupg-fingerprint missing from config file')
+
+    # Retrieve the data to add to the gist
+    files = list()
+
+    if sys.stdin.isatty():
+        if args.files:
+            logger.debug('action: - reading from files')
+            for path in args.files:
+                name = os.path.basename(path)
+                with open(path, 'rb') as fp:
+                    files.append(FileInfo(name, fp.read().decode('utf-8')))
 
         else:
-            if gist_file is not None:
-                print(gist_file)
+            logger.debug('action: - reading from editor')
+
+            filename = "file1.txt" if args.filename is None else args.filename
+
+            # Determine whether the temporary file should be deleted
+            if config.has_option('gist', 'delete-tempfiles'):
+                delete = config.getboolean('gist', 'delete-tempfiles')
             else:
-                for name, lines in content.items():
-                    print(u'{}:\n{}\n'.format(name, lines))
+                delete = True
 
-        return
+            with tempfile.NamedTemporaryFile('wb+', delete=delete) as fp:
+                logger.debug('action: - created {}'.format(fp.name))
+                os.system('{} {}'.format(editor, fp.name))
+                fp.flush()
+                fp.seek(0)
 
-    if args['files']:
-        gist_id = args['<id>']
-        logger.debug(u'action: files')
-        logger.debug(u'action: - {}'.format(gist_id))
-        for f in gapi.files(gist_id):
-            print(f)
-        return
+                files.append(FileInfo(filename, fp.read().decode('utf-8')))
 
-    if args['archive']:
-        gist_id = args['<id>']
-        logger.debug(u'action: archive')
-        logger.debug(u'action: - {}'.format(gist_id))
-        gapi.archive(gist_id)
-        return
+            if delete:
+                logger.debug('action: - removed {}'.format(fp.name))
 
-    if args['delete']:
-        gist_ids = args['<ids>']
-        logger.debug(u'action: delete')
-        for gist_id in gist_ids:
-            logger.debug(u'action: - {}'.format(gist_id))
-            gapi.delete(gist_id)
-        return
+    else:
+        logger.debug('action: - reading from stdin')
 
-    if args['version']:
-        logger.debug(u'action: version')
-        print('v{}'.format(gist.__version__))
-        return
+        filename = "file1.txt" if args.filename is None else args.filename
+        files.append(FileInfo(filename, sys.stdin.read()))
 
-    if args['create']:
-        logger.debug('action: create')
+    # Ensure that there are no empty files
+    for file in files:
+        if len(file.content) == 0:
+            raise GistError("'{}' is empty".format(file.name))
 
-        # If encryption is selected, perform an initial check to make sure that
-        # it is possible before processing any data.
-        if args['--encrypt']:
-            if not config.has_option('gist', 'gnupg-homedir'):
-                raise GistError('gnupg-homedir missing from config file')
+    # Encrypt the files or leave them unmodified
+    if args.encrypt:
+        logger.debug('action: - encrypting content')
 
-            if not config.has_option('gist', 'gnupg-fingerprint'):
-                raise GistError('gnupg-fingerprint missing from config file')
+        fingerprint = config.get('gist', 'gnupg-fingerprint')
+        gnupghome = config.get('gist', 'gnupg-homedir')
 
-        # Retrieve the data to add to the gist
-        files = list()
-
-        if sys.stdin.isatty():
-            if args['FILES']:
-                logger.debug('action: - reading from files')
-                for path in args['FILES']:
-                    name = os.path.basename(path)
-                    with open(path, 'rb') as fp:
-                        files.append(FileInfo(name, fp.read().decode('utf-8')))
-
-            else:
-                logger.debug('action: - reading from editor')
-
-                filename = args["<filename>"]
-                filename = "file1.txt" if filename is None else filename
-
-                # Determine whether the temporary file should be deleted
-                if config.has_option('gist', 'delete-tempfiles'):
-                    delete = config.getboolean('gist', 'delete-tempfiles')
-                else:
-                    delete = True
-
-                with tempfile.NamedTemporaryFile('wb+', delete=delete) as fp:
-                    logger.debug('action: - created {}'.format(fp.name))
-                    os.system('{} {}'.format(editor, fp.name))
-                    fp.flush()
-                    fp.seek(0)
-
-                    files.append(FileInfo(filename, fp.read().decode('utf-8')))
-
-                if delete:
-                    logger.debug('action: - removed {}'.format(fp.name))
-
-        else:
-            logger.debug('action: - reading from stdin')
-
-            filename = args["<filename>"]
-            filename = "file1.txt" if filename is None else filename
-
-            files.append(FileInfo(filename, sys.stdin.read()))
-
-        # Ensure that there are no empty files
+        gpg = gnupg.GPG(gnupghome=gnupghome, use_agent=True)
+        data = {}
         for file in files:
-            if len(file.content) == 0:
-                raise GistError("'{}' is empty".format(file.name))
+            cypher = gpg.encrypt(file.content.encode('utf-8'), fingerprint)
+            content = cypher.data.decode('utf-8')
 
-        description = args['<desc>']
-        public = args['--public']
+            data['{}.asc'.format(file.name)] = {'content': content}
+    else:
+        data = {file.name: {'content': file.content} for file in files}
 
-        # Encrypt the files or leave them unmodified
-        if args['--encrypt']:
-            logger.debug('action: - encrypting content')
-
-            fingerprint = config.get('gist', 'gnupg-fingerprint')
-            gnupghome = config.get('gist', 'gnupg-homedir')
-
-            gpg = gnupg.GPG(gnupghome=gnupghome, use_agent=True)
-            data = {}
-            for file in files:
-                cypher = gpg.encrypt(file.content.encode('utf-8'), fingerprint)
-                content = cypher.data.decode('utf-8')
-
-                data['{}.asc'.format(file.name)] = {'content': content}
-        else:
-            data = {file.name: {'content': file.content} for file in files}
-
-        print(gapi.create(description, data, public))
-        return
+    print(gapi.create(args.desc, data, args.public))
 
 
-if __name__ == "__main__":
+def handle_gist_clone(gapi, args, *vargs):
+    """Handle 'gist clone' command
+
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
+
+    """
+    logger.debug(u'action: clone')
+    logger.debug(u'action: - {} as {}'.format(args.id, args.name))
+    gapi.clone(args.id, args.name)
+
+
+def handle_gist_version(gapi, args, *vargs):
+    """Handle 'gist version' command
+
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
+
+    """
+    logger.debug(u'action: version')
+    print('v{}'.format(gist.__version__))
+
+
+def handle_gist_help(gapi, args, *vargs):
+    """Handle 'gist help' command
+
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
+
+    """
+    logger.debug(u'action: help')
+    print(__doc__)
+
+
+def create_gist_list_parser(subparser):
+    """Create parser for 'gist list' command
+
+    Arguments:
+        subparser: subparser object from primary parser
+
+    """
+    parser = subparser.add_parser("list")
+    parser.set_defaults(func=handle_gist_list)
+
+
+def create_gist_edit_parser(subparser):
+    """Create parser for 'gist edit' command
+
+    Arguments:
+        subparser: subparser object from primary parser
+
+    """
+    parser = subparser.add_parser("edit")
+    parser.add_argument("id")
+    parser.set_defaults(func=handle_gist_edit)
+
+
+def create_gist_description_parser(subparser):
+    """Create parser for 'gist description' command
+
+    Arguments:
+        subparser: subparser object from primary parser
+
+    """
+    parser = subparser.add_parser("description")
+    parser.add_argument("id")
+    parser.add_argument("desc")
+    parser.set_defaults(func=handle_gist_description)
+
+
+def create_gist_info_parser(subparser):
+    """Create parser for 'gist info' command
+
+    Arguments:
+        subparser: subparser object from primary parser
+
+    """
+    parser = subparser.add_parser("info")
+    parser.add_argument("id")
+    parser.set_defaults(func=handle_gist_info)
+
+
+def create_gist_fork_parser(subparser):
+    """Create parser for 'gist fork' command
+
+    Arguments:
+        subparser: subparser object from primary parser
+
+    """
+    parser = subparser.add_parser("fork")
+    parser.add_argument("id")
+    parser.set_defaults(func=handle_gist_fork)
+
+
+def create_gist_files_parser(subparser):
+    """Create parser for 'gist files' command
+
+    Arguments:
+        subparser: subparser object from primary parser
+
+    """
+    parser = subparser.add_parser("files")
+    parser.add_argument("id")
+    parser.set_defaults(func=handle_gist_files)
+
+
+def create_gist_delete_parser(subparser):
+    """Create parser for 'gist delete' command
+
+    Arguments:
+        subparser: subparser object from primary parser
+
+    """
+    parser = subparser.add_parser("delete")
+    parser.add_argument("ids", nargs="+")
+    parser.set_defaults(func=handle_gist_delete)
+
+
+def create_gist_archive_parser(subparser):
+    """Create parser for 'gist archive' command
+
+    Arguments:
+        subparser: subparser object from primary parser
+
+    """
+    parser = subparser.add_parser("archive")
+    parser.add_argument("id")
+    parser.set_defaults(func=handle_gist_archive)
+
+
+def create_gist_content_parser(subparser):
+    """Create parser for 'gist content' command
+
+    Arguments:
+        subparser: subparser object from primary parser
+
+    """
+    parser = subparser.add_parser("content")
+    parser.add_argument("id")
+    parser.add_argument("filename", nargs="?", default=None)
+    parser.add_argument("--decrypt", action="store_true")
+    parser.set_defaults(func=handle_gist_content)
+
+
+def create_gist_create_parser(subparser):
+    """Create parser for 'gist create' command
+
+    Arguments:
+        subparser: subparser object from primary parser
+
+    """
+    parser = subparser.add_parser("create")
+    parser.add_argument("desc")
+    parser.add_argument("--encrypt", action="store_true")
+    parser.add_argument("--public", action="store_true")
+    parser.add_argument("--filename")
+    parser.add_argument("files", nargs="*")
+    parser.set_defaults(func=handle_gist_create)
+
+
+def create_gist_clone_parser(subparser):
+    """Create parser for 'gist clone' command
+
+    Arguments:
+        subparser: subparser object from primary parser
+
+    """
+    parser = subparser.add_parser("clone")
+    parser.add_argument("id")
+    parser.add_argument("name", nargs="?", default=None)
+    parser.set_defaults(func=handle_gist_clone)
+
+
+def create_gist_version_parser(subparser):
+    """Create parser for 'gist version' command
+
+    Arguments:
+        subparser: subparser object from primary parser
+
+    """
+    parser = subparser.add_parser("version")
+    parser.set_defaults(func=handle_gist_version)
+
+
+def create_gist_help_parser(subparser):
+    """Create parser for 'gist help' command
+
+    Arguments:
+        subparser: subparser object from primary parser
+
+    """
+    parser = subparser.add_parser("help")
+    parser.set_defaults(func=handle_gist_help)
+
+
+def create_gist_parser():
+    """Create main parser for 'gist' commands"""
+
+    # Subclass the ArgumentParser so that we can override the 'error' function
+    class Parser(argparse.ArgumentParser):
+        def __init__(self, *args, **kwargs):
+            kwargs["add_help"] = False
+            super().__init__(*args, **kwargs)
+
+        def error(self, message):
+            raise UserError(message)
+
+    parser = Parser()
+    subparser = parser.add_subparsers()
+
+    create_gist_list_parser(subparser)
+    create_gist_edit_parser(subparser)
+    create_gist_description_parser(subparser)
+    create_gist_info_parser(subparser)
+    create_gist_fork_parser(subparser)
+    create_gist_files_parser(subparser)
+    create_gist_delete_parser(subparser)
+    create_gist_archive_parser(subparser)
+    create_gist_content_parser(subparser)
+    create_gist_create_parser(subparser)
+    create_gist_clone_parser(subparser)
+    create_gist_version_parser(subparser)
+    create_gist_help_parser(subparser)
+
+    return parser
+
+
+def main(argv=sys.argv[1:], config=None):
     try:
-        main()
+
+        # Setup logging
+        fmt = "%(created).3f %(levelname)s[%(name)s] %(message)s"
+        logging.basicConfig(format=fmt)
+
+        # Read in the configuration file
+        if config is None:
+            config = configparser.ConfigParser()
+            config_path = os.path.expanduser(os.sep.join(['~', '.gist']))
+            config_path = alternative_config(config_path)
+            config_path = xdg_data_config(config_path)
+            try:
+                with open(config_path) as fp:
+                    config.read_file(fp)
+            except Exception as e:
+                message = 'Unable to load configuration file: {0}'.format(e)
+                raise UserError(message)
+
+        try:
+            log_level = config.get('gist', 'log-level').upper()
+            logging.getLogger('gist').setLevel(log_level)
+        except Exception:
+            logging.getLogger('gist').setLevel(logging.ERROR)
+
+        # Determine the editor to use
+        editor = None
+        editor = alternative_editor(editor)
+        editor = environment_editor(editor)
+        editor = configuration_editor(config, editor)
+
+        if editor is None:
+            raise UserError('Unable to find an editor.')
+
+        token = get_personal_access_token(config)
+        gapi = gist.GistAPI(token=token, editor=editor)
+
+        # Parser command line arguments
+        parser = create_gist_parser()
+        args = parser.parse_args(argv)
+        args.func(gapi, args, config, editor)
+
+    except UserError as e:
+        sys.stderr.write(u"ERROR: {}\n".format(str(e)))
+        sys.stderr.write(u"\n{}".format(__doc__))
+        sys.stderr.flush()
+        sys.exit(1)
     except GistError as e:
         sys.stderr.write(u"GIST: {}\n".format(e.msg))
         sys.stderr.flush()
@@ -610,3 +893,7 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error(str(e))
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

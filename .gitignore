@@ -63,3 +63,4 @@ tests/gnupg/*
 .python-version
 .vimlocal
 tags
+.venv/
