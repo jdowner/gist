@@ -5,6 +5,7 @@ Name:
     gist
 
 Usage:
+    gist help
     gist list
     gist edit <id>
     gist description <id> <desc>
@@ -24,6 +25,9 @@ Description:
     gists.
 
 Commands:
+    help
+        Shows this documentation.
+
     create
         Create a new gist. A gist can be created in several ways. The content
         of the gist can be piped to the gist,
@@ -625,6 +629,18 @@ def handle_gist_version(gapi, args, *vargs):
     print('v{}'.format(gist.__version__))
 
 
+def handle_gist_help(gapi, args, *vargs):
+    """Handle 'gist help' command
+
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
+
+    """
+    logger.debug(u'action: help')
+    print(__doc__)
+
+
 def create_gist_list_parser(subparser):
     """Create parser for 'gist list' command
 
@@ -775,6 +791,17 @@ def create_gist_version_parser(subparser):
     parser.set_defaults(func=handle_gist_version)
 
 
+def create_gist_help_parser(subparser):
+    """Create parser for 'gist help' command
+
+    Arguments:
+        subparser: subparser object from primary parser
+
+    """
+    parser = subparser.add_parser("help")
+    parser.set_defaults(func=handle_gist_help)
+
+
 def create_gist_parser():
     """Create main parser for 'gist' commands"""
 
@@ -793,6 +820,7 @@ def create_gist_parser():
     create_gist_create_parser(subparser)
     create_gist_clone_parser(subparser)
     create_gist_version_parser(subparser)
+    create_gist_help_parser(subparser)
 
     return parser
 
