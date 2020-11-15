@@ -9,9 +9,11 @@ them.
 .. image:: https://travis-ci.org/jdowner/gist.svg?branch=master
     :target: https://travis-ci.org/jdowner/gist
 
+
 Requirements
 --------------------------------------------------
 Python 3.5, 3.6 or 3.7 is required.
+
 
 Installation
 --------------------------------------------------
@@ -131,6 +133,7 @@ command line. There are several commands available:
   gist content     - prints the content of the gist to stdout
   gist info        - prints detailed information about a gist
   gist version     - prints the current version
+  gist help        - prints the help documentation
 
 
 **gist create**
@@ -288,6 +291,11 @@ JSON object. It is mostly useful for debugging.
 Simply prints the current version.
 
 
+**gist help**
+
+Prints out the help documentation.
+
+
 Configuration
 --------------------------------------------------
 
@@ -331,7 +339,6 @@ Dependencies
 
 'gist' currently depends on,
 
-* docopts
 * >=python-gnupg-0.4.1
 * requests
 * simplejson
@@ -363,3 +370,4 @@ Thank you to the following people for contributing to 'gist'!
 * jsbronder (https://github.com/jsbronder)
 * hugsy (https://github.com/hugsy)
 * Kenneth Benzie (https://github.com/kbenzie)
+* rtfmoz2 (https://github.com/rtfmoz2)
