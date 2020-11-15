@@ -363,6 +363,287 @@ def xdg_data_config(default):
     return default
 
 
+def handle_gist_list(gapi, args):
+    """Handle 'gist list' command
+
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
+
+    """
+    logger.debug(u'action: list')
+    gists = gapi.list()
+    for info in gists:
+        public = '+' if info.public else '-'
+        desc = '' if info.desc is None else info.desc
+        line = u'{} {} {}'.format(info.id, public, desc)
+        try:
+            print(elide(line))
+        except UnicodeEncodeError:
+            logger.error('unable to write gist {}'.format(info.id))
+
+
+def handle_gist_edit(gapi, args):
+    """Handle 'gist edit' command
+
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
+
+    """
+    gist_id = args['<id>']
+    logger.debug(u'action: edit')
+    logger.debug(u'action: - {}'.format(gist_id))
+    gapi.edit(gist_id)
+
+
+def handle_gist_description(gapi, args):
+    """Handle 'gist description' command
+
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
+
+    """
+    gist_id = args['<id>']
+    description = args['<desc>']
+    logger.debug(u'action: description')
+    logger.debug(u'action: - {}'.format(gist_id))
+    logger.debug(u'action: - {}'.format(description))
+    gapi.description(gist_id, description)
+
+
+def handle_gist_info(gapi, args):
+    """Handle 'gist info' command
+
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
+
+    """
+    gist_id = args['<id>']
+    logger.debug(u'action: info')
+    logger.debug(u'action: - {}'.format(gist_id))
+    info = gapi.info(gist_id)
+    print(json.dumps(info, indent=2))
+
+
+def handle_gist_fork(gapi, args):
+    """Handle 'gist fork' command
+
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
+
+    """
+    gist_id = args['<id>']
+    logger.debug(u'action: fork')
+    logger.debug(u'action: - {}'.format(gist_id))
+    info = gapi.fork(gist_id)
+
+
+def handle_gist_files(gapi, args):
+    """Handle 'gist files' command
+
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
+
+    """
+    gist_id = args['<id>']
+    logger.debug(u'action: files')
+    logger.debug(u'action: - {}'.format(gist_id))
+    for f in gapi.files(gist_id):
+        print(f)
+
+
+def handle_gist_delete(gapi, args):
+    """Handle 'gist delete' command
+
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
+
+    """
+    gist_ids = args['<ids>']
+    logger.debug(u'action: delete')
+    for gist_id in gist_ids:
+        logger.debug(u'action: - {}'.format(gist_id))
+        gapi.delete(gist_id)
+
+
+def handle_gist_archive(gapi, args):
+    """Handle 'gist archive' command
+
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
+
+    """
+    gist_id = args['<id>']
+    logger.debug(u'action: archive')
+    logger.debug(u'action: - {}'.format(gist_id))
+    gapi.archive(gist_id)
+
+
+def handle_gist_content(gapi, config, args):
+    """Handle 'gist content' command
+
+    Arguments:
+        gapi: a GistAPI object
+        config: configuration data
+        args: parsed command line arguments
+
+    """
+    gist_id = args['<id>']
+    logger.debug(u'action: content')
+    logger.debug(u'action: - {}'.format(gist_id))
+
+    content = gapi.content(gist_id)
+    gist_file = content.get(args['<filename>'])
+
+    if args['--decrypt']:
+        if not config.has_option('gist', 'gnupg-homedir'):
+            raise GistError('gnupg-homedir missing from config file')
+
+        homedir = config.get('gist', 'gnupg-homedir')
+        logger.debug(u'action: - {}'.format(homedir))
+
+        gpg = gnupg.GPG(gnupghome=homedir, use_agent=True)
+        if gist_file is not None:
+            print(gpg.decrypt(gist_file).data.decode('utf-8'))
+        else:
+            for name, lines in content.items():
+                lines = gpg.decrypt(lines).data.decode('utf-8')
+                print(u'{} (decrypted):\n{}\n'.format(name, lines))
+
+    else:
+        if gist_file is not None:
+            print(gist_file)
+        else:
+            for name, lines in content.items():
+                print(u'{}:\n{}\n'.format(name, lines))
+
+
+def handle_gist_create(gapi, config, editor, args):
+    """Handle 'gist create' command
+
+    Arguments:
+        gapi: a GistAPI object
+        config: configuration data
+        editor: editor command to use to create gist content
+        args: parsed command line arguments
+
+    """
+    logger.debug('action: create')
+
+    # If encryption is selected, perform an initial check to make sure that
+    # it is possible before processing any data.
+    if args['--encrypt']:
+        if not config.has_option('gist', 'gnupg-homedir'):
+            raise GistError('gnupg-homedir missing from config file')
+
+        if not config.has_option('gist', 'gnupg-fingerprint'):
+            raise GistError('gnupg-fingerprint missing from config file')
+
+    # Retrieve the data to add to the gist
+    files = list()
+
+    if sys.stdin.isatty():
+        if args['FILES']:
+            logger.debug('action: - reading from files')
+            for path in args['FILES']:
+                name = os.path.basename(path)
+                with open(path, 'rb') as fp:
+                    files.append(FileInfo(name, fp.read().decode('utf-8')))
+
+        else:
+            logger.debug('action: - reading from editor')
+
+            filename = args["<filename>"]
+            filename = "file1.txt" if filename is None else filename
+
+            # Determine whether the temporary file should be deleted
+            if config.has_option('gist', 'delete-tempfiles'):
+                delete = config.getboolean('gist', 'delete-tempfiles')
+            else:
+                delete = True
+
+            with tempfile.NamedTemporaryFile('wb+', delete=delete) as fp:
+                logger.debug('action: - created {}'.format(fp.name))
+                os.system('{} {}'.format(editor, fp.name))
+                fp.flush()
+                fp.seek(0)
+
+                files.append(FileInfo(filename, fp.read().decode('utf-8')))
+
+            if delete:
+                logger.debug('action: - removed {}'.format(fp.name))
+
+    else:
+        logger.debug('action: - reading from stdin')
+
+        filename = args["<filename>"]
+        filename = "file1.txt" if filename is None else filename
+
+        files.append(FileInfo(filename, sys.stdin.read()))
+
+    # Ensure that there are no empty files
+    for file in files:
+        if len(file.content) == 0:
+            raise GistError("'{}' is empty".format(file.name))
+
+    description = args['<desc>']
+    public = args['--public']
+
+    # Encrypt the files or leave them unmodified
+    if args['--encrypt']:
+        logger.debug('action: - encrypting content')
+
+        fingerprint = config.get('gist', 'gnupg-fingerprint')
+        gnupghome = config.get('gist', 'gnupg-homedir')
+
+        gpg = gnupg.GPG(gnupghome=gnupghome, use_agent=True)
+        data = {}
+        for file in files:
+            cypher = gpg.encrypt(file.content.encode('utf-8'), fingerprint)
+            content = cypher.data.decode('utf-8')
+
+            data['{}.asc'.format(file.name)] = {'content': content}
+    else:
+        data = {file.name: {'content': file.content} for file in files}
+
+    print(gapi.create(description, data, public))
+
+
+def handle_gist_clone(gapi, args):
+    """Handle 'gist clone' command
+
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
+
+    """
+    gist_id = args['<id>']
+    gist_name = args['<name>']
+    logger.debug(u'action: clone')
+    logger.debug(u'action: - {} as {}'.format(gist_id, gist_name))
+    gapi.clone(gist_id, gist_name)
+
+
+def handle_gist_version(gapi, args):
+    """Handle 'gist version' command
+
+    Arguments:
+        gapi: a GistAPI object
+        args: parsed command line arguments
+
+    """
+    logger.debug(u'action: version')
+    print('v{}'.format(gist.__version__))
+
+
+
 def main(argv=sys.argv[1:], config=None):
     args = docopt.docopt(
             __doc__,
@@ -406,197 +687,51 @@ def main(argv=sys.argv[1:], config=None):
     gapi = gist.GistAPI(token=token, editor=editor)
 
     if args['list']:
-        logger.debug(u'action: list')
-        gists = gapi.list()
-        for info in gists:
-            public = '+' if info.public else '-'
-            desc = '' if info.desc is None else info.desc
-            line = u'{} {} {}'.format(info.id, public, desc)
-            try:
-                print(elide(line))
-            except UnicodeEncodeError:
-                logger.error('unable to write gist {}'.format(info.id))
+        handle_gist_list(gapi, args)
         return
 
     if args['info']:
-        gist_id = args['<id>']
-        logger.debug(u'action: info')
-        logger.debug(u'action: - {}'.format(gist_id))
-        info = gapi.info(gist_id)
-        print(json.dumps(info, indent=2))
+        handle_gist_info(gapi, args)
         return
 
     if args['edit']:
-        gist_id = args['<id>']
-        logger.debug(u'action: edit')
-        logger.debug(u'action: - {}'.format(gist_id))
-        gapi.edit(gist_id)
+        handle_gist_edit(gapi, args)
         return
 
     if args['description']:
-        gist_id = args['<id>']
-        description = args['<desc>']
-        logger.debug(u'action: description')
-        logger.debug(u'action: - {}'.format(gist_id))
-        logger.debug(u'action: - {}'.format(description))
-        gapi.description(gist_id, description)
+        handle_gist_description(gapi, args)
         return
 
     if args['fork']:
-        gist_id = args['<id>']
-        logger.debug(u'action: fork')
-        logger.debug(u'action: - {}'.format(gist_id))
-        info = gapi.fork(gist_id)
+        handle_gist_fork(gapi, args)
         return
 
     if args['clone']:
-        gist_id = args['<id>']
-        gist_name = args['<name>']
-        logger.debug(u'action: clone')
-        logger.debug(u'action: - {} as {}'.format(gist_id, gist_name))
-        gapi.clone(gist_id, gist_name)
+        handle_gist_clone(gapi, args)
         return
 
     if args['content']:
-        gist_id = args['<id>']
-        logger.debug(u'action: content')
-        logger.debug(u'action: - {}'.format(gist_id))
-
-        content = gapi.content(gist_id)
-        gist_file = content.get(args['<filename>'])
-
-        if args['--decrypt']:
-            if not config.has_option('gist', 'gnupg-homedir'):
-                raise GistError('gnupg-homedir missing from config file')
-
-            homedir = config.get('gist', 'gnupg-homedir')
-            logger.debug(u'action: - {}'.format(homedir))
-
-            gpg = gnupg.GPG(gnupghome=homedir, use_agent=True)
-            if gist_file is not None:
-                print(gpg.decrypt(gist_file).data.decode('utf-8'))
-            else:
-                for name, lines in content.items():
-                    lines = gpg.decrypt(lines).data.decode('utf-8')
-                    print(u'{} (decrypted):\n{}\n'.format(name, lines))
-
-        else:
-            if gist_file is not None:
-                print(gist_file)
-            else:
-                for name, lines in content.items():
-                    print(u'{}:\n{}\n'.format(name, lines))
-
+        handle_gist_content(gapi, config, args)
         return
 
     if args['files']:
-        gist_id = args['<id>']
-        logger.debug(u'action: files')
-        logger.debug(u'action: - {}'.format(gist_id))
-        for f in gapi.files(gist_id):
-            print(f)
+        handle_gist_files(gapi, args)
         return
 
     if args['archive']:
-        gist_id = args['<id>']
-        logger.debug(u'action: archive')
-        logger.debug(u'action: - {}'.format(gist_id))
-        gapi.archive(gist_id)
+        handle_gist_archive(gapi, args)
         return
 
     if args['delete']:
-        gist_ids = args['<ids>']
-        logger.debug(u'action: delete')
-        for gist_id in gist_ids:
-            logger.debug(u'action: - {}'.format(gist_id))
-            gapi.delete(gist_id)
+        handle_gist_delete(gapi, args)
         return
 
     if args['version']:
-        logger.debug(u'action: version')
-        print('v{}'.format(gist.__version__))
+        handle_gist_version(gapi, args)
         return
 
     if args['create']:
-        logger.debug('action: create')
-
-        # If encryption is selected, perform an initial check to make sure that
-        # it is possible before processing any data.
-        if args['--encrypt']:
-            if not config.has_option('gist', 'gnupg-homedir'):
-                raise GistError('gnupg-homedir missing from config file')
-
-            if not config.has_option('gist', 'gnupg-fingerprint'):
-                raise GistError('gnupg-fingerprint missing from config file')
-
-        # Retrieve the data to add to the gist
-        files = list()
-
-        if sys.stdin.isatty():
-            if args['FILES']:
-                logger.debug('action: - reading from files')
-                for path in args['FILES']:
-                    name = os.path.basename(path)
-                    with open(path, 'rb') as fp:
-                        files.append(FileInfo(name, fp.read().decode('utf-8')))
-
-            else:
-                logger.debug('action: - reading from editor')
-
-                filename = args["<filename>"]
-                filename = "file1.txt" if filename is None else filename
-
-                # Determine whether the temporary file should be deleted
-                if config.has_option('gist', 'delete-tempfiles'):
-                    delete = config.getboolean('gist', 'delete-tempfiles')
-                else:
-                    delete = True
-
-                with tempfile.NamedTemporaryFile('wb+', delete=delete) as fp:
-                    logger.debug('action: - created {}'.format(fp.name))
-                    os.system('{} {}'.format(editor, fp.name))
-                    fp.flush()
-                    fp.seek(0)
-
-                    files.append(FileInfo(filename, fp.read().decode('utf-8')))
-
-                if delete:
-                    logger.debug('action: - removed {}'.format(fp.name))
-
-        else:
-            logger.debug('action: - reading from stdin')
-
-            filename = args["<filename>"]
-            filename = "file1.txt" if filename is None else filename
-
-            files.append(FileInfo(filename, sys.stdin.read()))
-
-        # Ensure that there are no empty files
-        for file in files:
-            if len(file.content) == 0:
-                raise GistError("'{}' is empty".format(file.name))
-
-        description = args['<desc>']
-        public = args['--public']
-
-        # Encrypt the files or leave them unmodified
-        if args['--encrypt']:
-            logger.debug('action: - encrypting content')
-
-            fingerprint = config.get('gist', 'gnupg-fingerprint')
-            gnupghome = config.get('gist', 'gnupg-homedir')
-
-            gpg = gnupg.GPG(gnupghome=gnupghome, use_agent=True)
-            data = {}
-            for file in files:
-                cypher = gpg.encrypt(file.content.encode('utf-8'), fingerprint)
-                content = cypher.data.decode('utf-8')
-
-                data['{}.asc'.format(file.name)] = {'content': content}
-        else:
-            data = {file.name: {'content': file.content} for file in files}
-
-        print(gapi.create(description, data, public))
+        handle_gist_create(gapi, config, editor, args)
         return
 
 
