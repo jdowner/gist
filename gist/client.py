@@ -161,10 +161,17 @@ if sys.version_info < (3, 2):
 
 logger = logging.getLogger('gist')
 
-# We need to wrap stdout in order to properly handle piping uincode output
-stream = sys.stdout.detach() if sys.version_info[0] > 2 else sys.stdout
-encoding = locale.getpreferredencoding()
-sys.stdout = codecs.getwriter(encoding)(stream)
+
+def wrap_stdout_for_unicode():
+    """
+    We need to wrap stdout in order to properly handle piping unicode output.
+    However, detaching stdout can cause problems when trying to run tests.
+    Therefore this logic is placed inside this function so that it can be
+    disabled (monkeypatched) when tests are run.
+    """
+
+    encoding = locale.getpreferredencoding()
+    sys.stdout = codecs.getwriter(encoding)(sys.stdout.detach())
 
 
 class GistError(Exception):
@@ -840,6 +847,7 @@ def create_gist_parser():
 
 def main(argv=sys.argv[1:], config=None):
     try:
+        wrap_stdout_for_unicode()
 
         # Setup logging
         fmt = "%(created).3f %(levelname)s[%(name)s] %(message)s"
