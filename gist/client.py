@@ -154,11 +154,6 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
-# From version 3.2 readfp() has been deprecated and replaced by read_file().
-# Here we monkeypatch earlier versions so that we have a consist interface.
-if sys.version_info < (3, 2):
-    configparser.ConfigParser.read_file = configparser.ConfigParser.readfp
-
 logger = logging.getLogger('gist')
 
 
