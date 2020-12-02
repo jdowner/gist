@@ -891,7 +891,6 @@ def main(argv=sys.argv[1:], config=None):
 
     except UserError as e:
         sys.stderr.write(u"ERROR: {}\n".format(str(e)))
-        sys.stderr.write(u"\n{}".format(__doc__))
         sys.stderr.flush()
         sys.exit(1)
     except GistError as e:
