@@ -19,7 +19,7 @@ uninstall:
 	fi
 
 test:
-	$(PYTHON) setup.py test
+	$(PYTHON) -m pytest -s -v tests
 
 style:
 	pycodestyle --config=./setup.cfg $(FILES)
