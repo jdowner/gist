@@ -265,59 +265,6 @@ class TestGistCLI(unittest.TestCase):
         self.assertIn('file-B.txt:', lines)
         self.assertIn('test-content-\u212C', lines)
 
-    def test_get_value_from_command(self):
-        """
-        Ensure that values which start with ``!`` are treated as commands and
-        return the string printed to stdout by the command, otherwise ensure
-        that the value passed to the function is returned.
-        """
-        self.assertEqual(
-            'magic token',
-            gist.client.get_value_from_command('!echo "\nmagic token"'))
-        self.assertEqual(
-            'magic token',
-            gist.client.get_value_from_command(' !echo "magic token\n"'))
-        self.assertEqual(
-            'magic token',
-            gist.client.get_value_from_command('magic token'))
-
-    def test_get_personal_access_token(self):
-        config = configparser.ConfigParser()
-        config.add_section("gist")
-
-        # Check that a missing token raises an exception
-        with self.assertRaises(gist.client.GistMissingTokenError):
-            gist.client.get_personal_access_token(config)
-
-        # Check that an empty token raises an exception
-        config.set("gist", "token", "")
-        with self.assertRaises(gist.client.GistEmptyTokenError):
-            gist.client.get_personal_access_token(config)
-
-        # Check that an empty token (whitespace) raises an exception
-        config.set("gist", "token", "   ")
-        with self.assertRaises(gist.client.GistEmptyTokenError):
-            gist.client.get_personal_access_token(config)
-
-        # Check that gaps between valid strings raise an exception
-        config.set("gist", "token", "123 123")
-        with self.assertRaises(gist.client.GistInvalidTokenError):
-            gist.client.get_personal_access_token(config)
-
-        # Check that invalid characters raise an exception
-        config.set("gist", "token", "foo")
-        with self.assertRaises(gist.client.GistInvalidTokenError):
-            gist.client.get_personal_access_token(config)
-
-        # Check that a string of valid characters, with whitespace at either end, does
-        # not raise an error
-        config.set("gist", "token", "   123   ")
-        gist.client.get_personal_access_token(config)
-
-        # Check that a string of valid characters does not raise an exception
-        config.set("gist", "token", "123abcABC0987")
-        gist.client.get_personal_access_token(config)
-
 
 class TestGistGPG(unittest.TestCase):
     gnupghome = os.path.abspath('./tests/gnupg')
