@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import base64
+import configparser
 import contextlib
 import errno
 import gnupg
@@ -11,11 +12,6 @@ import subprocess
 import sys
 import tempfile
 import unittest
-
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
 
 try:
     from StringIO import StringIO
