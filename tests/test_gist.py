@@ -393,5 +393,3 @@ class TestGistGPG(unittest.TestCase):
         self.assertEqual(text, plain)
 
 
-if __name__ == "__main__":
-    unittest.main()
