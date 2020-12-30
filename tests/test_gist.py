@@ -6,18 +6,13 @@ import configparser
 import contextlib
 import errno
 import gnupg
+import io
 import os
 import shlex
 import subprocess
 import sys
 import tempfile
 import unittest
-
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
-
 import json
 import responses
 
@@ -199,7 +194,7 @@ class TestGistCLI(unittest.TestCase):
         self.config.set("gist", "token", "f00")
 
     def command_response(self, cmd):
-        buf = StringIO()
+        buf = io.StringIO()
         with redirect_stdout(buf):
             gist.client.main(argv=shlex.split(cmd), config=self.config)
 
@@ -283,7 +278,7 @@ class TestGistGPG(unittest.TestCase):
 
     def command_response(self, cmd):
         """Return stdout produce by the specified CLI command"""
-        buf = StringIO()
+        buf = io.StringIO()
         with redirect_stdout(buf):
             gist.client.main(argv=shlex.split(cmd), config=self.config)
 
@@ -387,5 +382,3 @@ class TestGistGPG(unittest.TestCase):
 
         self.assertNotEqual(text, cypher)
         self.assertEqual(text, plain)
-
-
