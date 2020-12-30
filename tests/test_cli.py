@@ -24,7 +24,7 @@ def b64encode(s):
     returned.
 
     """
-    return base64.b64encode(s.encode('utf-8')).decode('utf-8')
+    return base64.b64encode(s.encode("utf-8")).decode("utf-8")
 
 
 @responses.activate
@@ -35,46 +35,54 @@ def test_list(editor, gist_command):
         desc = "test-{}".format(id)
         public = id % 2 == 0
 
-        message.append({
+        message.append(
+            {
                 "id": id,
                 "description": "test-{}".format(id),
                 "public": id % 2 == 0,
-                })
+            }
+        )
 
         expected_gists.append("{} {} test-{}".format(id, "+" if public else "-", id))
 
-    responses.add(responses.GET, 'https://api.github.com/gists',
-            body=json.dumps(message),
-            status=200,
-            )
+    responses.add(
+        responses.GET,
+        "https://api.github.com/gists",
+        body=json.dumps(message),
+        status=200,
+    )
 
-    gists = gist_command('list')
+    gists = gist_command("list")
 
     assert gists == expected_gists
 
 
 @responses.activate
 def test_content(editor, gist_command):
-    responses.add(responses.GET, 'https://api.github.com/gists/1',
-            body=json.dumps({
+    responses.add(
+        responses.GET,
+        "https://api.github.com/gists/1",
+        body=json.dumps(
+            {
                 "files": {
                     "file-A.txt": {
                         "filename": "file-A.txt",
                         "content": b64encode("test-content-A"),
-                        },
+                    },
                     "file-B.txt": {
                         "filename": "file-B.txt",
                         "content": b64encode("test-content-\u212C"),
-                        }
                     },
+                },
                 "description": "test-gist",
                 "public": True,
                 "id": 1,
-                }),
-            status=200,
-            )
+            }
+        ),
+        status=200,
+    )
 
-    lines = gist_command('content 1')
+    lines = gist_command("content 1")
 
     assert "file-A.txt:" in lines
     assert "test-content-A" in lines

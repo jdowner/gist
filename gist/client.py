@@ -144,7 +144,7 @@ import gnupg
 
 from . import gist
 
-if platform.system() != 'Windows':
+if platform.system() != "Windows":
     # those modules exist everywhere but on Windows
     import termios
     import fcntl
@@ -154,7 +154,7 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
-logger = logging.getLogger('gist')
+logger = logging.getLogger("gist")
 
 
 def wrap_stdout_for_unicode():
@@ -205,24 +205,24 @@ def terminal_width():
     try:
         if platform.system() == "Windows":
             from ctypes import windll, create_string_buffer
+
             # Reference: https://docs.microsoft.com/en-us/windows/console/getstdhandle # noqa
             hStdErr = -12
             get_console_info_fmtstr = "hhhhHhhhhhh"
             herr = windll.kernel32.GetStdHandle(hStdErr)
-            csbi = create_string_buffer(
-                    struct.calcsize(get_console_info_fmtstr))
+            csbi = create_string_buffer(struct.calcsize(get_console_info_fmtstr))
             if not windll.kernel32.GetConsoleScreenBufferInfo(herr, csbi):
                 raise OSError("Failed to determine the terminal size")
             (_, _, _, _, _, left, top, right, bottom, _, _) = struct.unpack(
-                    get_console_info_fmtstr, csbi.raw)
+                get_console_info_fmtstr, csbi.raw
+            )
             tty_columns = right - left + 1
             return tty_columns
         else:
             exitcode = fcntl.ioctl(
-                    0,
-                    termios.TIOCGWINSZ,
-                    struct.pack('HHHH', 0, 0, 0, 0))
-            h, w, hp, wp = struct.unpack('HHHH', exitcode)
+                0, termios.TIOCGWINSZ, struct.pack("HHHH", 0, 0, 0, 0)
+            )
+            h, w, hp, wp = struct.unpack("HHHH", exitcode)
         return w
     except Exception:
         pass
@@ -245,7 +245,7 @@ def elide(txt, width=terminal_width()):
     if width is not None and width > 3:
         try:
             if len(txt) > width:
-                return txt[:width - 3] + '...'
+                return txt[: width - 3] + "..."
         except Exception:
             pass
 
@@ -264,10 +264,10 @@ def get_value_from_command(value):
 
     """
     command = value.strip()
-    if command[0] == '!':
-        process = subprocess.Popen(shlex.split(command[1:]),
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
+    if command[0] == "!":
+        process = subprocess.Popen(
+            shlex.split(command[1:]), stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
         out, err = process.communicate()
         if process.returncode != 0:
             raise GistError(err)
@@ -306,8 +306,8 @@ def alternative_editor(default):
         default: the default to use if the alternatives editor cannot be found.
 
     """
-    if os.path.exists('/usr/bin/editor'):
-        return '/usr/bin/editor'
+    if os.path.exists("/usr/bin/editor"):
+        return "/usr/bin/editor"
 
     return default
 
@@ -320,8 +320,8 @@ def environment_editor(default):
                 nothing useful.
 
     """
-    editor = os.environ.get('EDITOR', '').strip()
-    if editor != '':
+    editor = os.environ.get("EDITOR", "").strip()
+    if editor != "":
         return editor
 
     return default
@@ -335,7 +335,7 @@ def configuration_editor(config, default):
 
     """
     try:
-        return config.get('gist', 'editor')
+        return config.get("gist", "editor")
     except configparser.NoOptionError:
         return default
 
@@ -347,7 +347,7 @@ def alternative_config(default):
         default: the default to use if ~/.config/gist does not exist.
 
     """
-    config_path = os.path.expanduser(os.sep.join(['~', '.config', 'gist']))
+    config_path = os.path.expanduser(os.sep.join(["~", ".config", "gist"]))
     if os.path.isfile(config_path):
         return config_path
     else:
@@ -363,9 +363,9 @@ def xdg_data_config(default):
             file.
 
     """
-    config = os.environ.get('XDG_DATA_HOME', '').strip()
-    if config != '':
-        config_path = os.path.join(config, 'gist')
+    config = os.environ.get("XDG_DATA_HOME", "").strip()
+    if config != "":
+        config_path = os.path.join(config, "gist")
         if os.path.isfile(config_path):
             return config_path
 
@@ -380,16 +380,16 @@ def handle_gist_list(gapi, args, *vargs):
         args: parsed command line arguments
 
     """
-    logger.debug(u'action: list')
+    logger.debug(u"action: list")
     gists = gapi.list()
     for info in gists:
-        public = '+' if info.public else '-'
-        desc = '' if info.desc is None else info.desc
-        line = u'{} {} {}'.format(info.id, public, desc)
+        public = "+" if info.public else "-"
+        desc = "" if info.desc is None else info.desc
+        line = u"{} {} {}".format(info.id, public, desc)
         try:
             print(elide(line))
         except UnicodeEncodeError:
-            logger.error('unable to write gist {}'.format(info.id))
+            logger.error("unable to write gist {}".format(info.id))
 
 
 def handle_gist_edit(gapi, args):
@@ -400,8 +400,8 @@ def handle_gist_edit(gapi, args):
         args: parsed command line arguments
 
     """
-    logger.debug(u'action: edit')
-    logger.debug(u'action: - {}'.format(args.id))
+    logger.debug(u"action: edit")
+    logger.debug(u"action: - {}".format(args.id))
     gapi.edit(args.id)
 
 
@@ -413,9 +413,9 @@ def handle_gist_description(gapi, args, *vargs):
         args: parsed command line arguments
 
     """
-    logger.debug(u'action: description')
-    logger.debug(u'action: - {}'.format(args.id))
-    logger.debug(u'action: - {}'.format(args.desc))
+    logger.debug(u"action: description")
+    logger.debug(u"action: - {}".format(args.id))
+    logger.debug(u"action: - {}".format(args.desc))
     gapi.description(args.id, args.desc)
 
 
@@ -427,8 +427,8 @@ def handle_gist_info(gapi, args, *vargs):
         args: parsed command line arguments
 
     """
-    logger.debug(u'action: info')
-    logger.debug(u'action: - {}'.format(args.id))
+    logger.debug(u"action: info")
+    logger.debug(u"action: - {}".format(args.id))
     info = gapi.info(args.id)
     print(json.dumps(info, indent=2))
 
@@ -441,8 +441,8 @@ def handle_gist_fork(gapi, args, *vargs):
         args: parsed command line arguments
 
     """
-    logger.debug(u'action: fork')
-    logger.debug(u'action: - {}'.format(args.id))
+    logger.debug(u"action: fork")
+    logger.debug(u"action: - {}".format(args.id))
     info = gapi.fork(args.id)
 
 
@@ -454,8 +454,8 @@ def handle_gist_files(gapi, args, *vargs):
         args: parsed command line arguments
 
     """
-    logger.debug(u'action: files')
-    logger.debug(u'action: - {}'.format(args.id))
+    logger.debug(u"action: files")
+    logger.debug(u"action: - {}".format(args.id))
     for f in gapi.files(args.id):
         print(f)
 
@@ -468,9 +468,9 @@ def handle_gist_delete(gapi, args, *vargs):
         args: parsed command line arguments
 
     """
-    logger.debug(u'action: delete')
+    logger.debug(u"action: delete")
     for gist_id in args.ids:
-        logger.debug(u'action: - {}'.format(gist_id))
+        logger.debug(u"action: - {}".format(gist_id))
         gapi.delete(gist_id)
 
 
@@ -482,8 +482,8 @@ def handle_gist_archive(gapi, args, *vargs):
         args: parsed command line arguments
 
     """
-    logger.debug(u'action: archive')
-    logger.debug(u'action: - {}'.format(args.id))
+    logger.debug(u"action: archive")
+    logger.debug(u"action: - {}".format(args.id))
     gapi.archive(args.id)
 
 
@@ -496,33 +496,33 @@ def handle_gist_content(gapi, args, config, *vargs):
         config: configuration data
 
     """
-    logger.debug(u'action: content')
-    logger.debug(u'action: - {}'.format(args.id))
+    logger.debug(u"action: content")
+    logger.debug(u"action: - {}".format(args.id))
 
     content = gapi.content(args.id)
     gist_file = content.get(args.filename)
 
     if args.decrypt:
-        if not config.has_option('gist', 'gnupg-homedir'):
-            raise GistError('gnupg-homedir missing from config file')
+        if not config.has_option("gist", "gnupg-homedir"):
+            raise GistError("gnupg-homedir missing from config file")
 
-        homedir = config.get('gist', 'gnupg-homedir')
-        logger.debug(u'action: - {}'.format(homedir))
+        homedir = config.get("gist", "gnupg-homedir")
+        logger.debug(u"action: - {}".format(homedir))
 
         gpg = gnupg.GPG(gnupghome=homedir, use_agent=True)
         if gist_file is not None:
-            print(gpg.decrypt(gist_file).data.decode('utf-8'))
+            print(gpg.decrypt(gist_file).data.decode("utf-8"))
         else:
             for name, lines in content.items():
-                lines = gpg.decrypt(lines).data.decode('utf-8')
-                print(u'{} (decrypted):\n{}\n'.format(name, lines))
+                lines = gpg.decrypt(lines).data.decode("utf-8")
+                print(u"{} (decrypted):\n{}\n".format(name, lines))
 
     else:
         if gist_file is not None:
             print(gist_file)
         else:
             for name, lines in content.items():
-                print(u'{}:\n{}\n'.format(name, lines))
+                print(u"{}:\n{}\n".format(name, lines))
 
 
 def handle_gist_create(gapi, args, config, editor, *vargs):
@@ -535,52 +535,52 @@ def handle_gist_create(gapi, args, config, editor, *vargs):
         editor: editor command to use to create gist content
 
     """
-    logger.debug('action: create')
+    logger.debug("action: create")
 
     # If encryption is selected, perform an initial check to make sure that
     # it is possible before processing any data.
     if args.encrypt:
-        if not config.has_option('gist', 'gnupg-homedir'):
-            raise GistError('gnupg-homedir missing from config file')
+        if not config.has_option("gist", "gnupg-homedir"):
+            raise GistError("gnupg-homedir missing from config file")
 
-        if not config.has_option('gist', 'gnupg-fingerprint'):
-            raise GistError('gnupg-fingerprint missing from config file')
+        if not config.has_option("gist", "gnupg-fingerprint"):
+            raise GistError("gnupg-fingerprint missing from config file")
 
     # Retrieve the data to add to the gist
     files = list()
 
     if sys.stdin.isatty():
         if args.files:
-            logger.debug('action: - reading from files')
+            logger.debug("action: - reading from files")
             for path in args.files:
                 name = os.path.basename(path)
-                with open(path, 'rb') as fp:
-                    files.append(FileInfo(name, fp.read().decode('utf-8')))
+                with open(path, "rb") as fp:
+                    files.append(FileInfo(name, fp.read().decode("utf-8")))
 
         else:
-            logger.debug('action: - reading from editor')
+            logger.debug("action: - reading from editor")
 
             filename = "file1.txt" if args.filename is None else args.filename
 
             # Determine whether the temporary file should be deleted
-            if config.has_option('gist', 'delete-tempfiles'):
-                delete = config.getboolean('gist', 'delete-tempfiles')
+            if config.has_option("gist", "delete-tempfiles"):
+                delete = config.getboolean("gist", "delete-tempfiles")
             else:
                 delete = True
 
-            with tempfile.NamedTemporaryFile('wb+', delete=delete) as fp:
-                logger.debug('action: - created {}'.format(fp.name))
-                os.system('{} {}'.format(editor, fp.name))
+            with tempfile.NamedTemporaryFile("wb+", delete=delete) as fp:
+                logger.debug("action: - created {}".format(fp.name))
+                os.system("{} {}".format(editor, fp.name))
                 fp.flush()
                 fp.seek(0)
 
-                files.append(FileInfo(filename, fp.read().decode('utf-8')))
+                files.append(FileInfo(filename, fp.read().decode("utf-8")))
 
             if delete:
-                logger.debug('action: - removed {}'.format(fp.name))
+                logger.debug("action: - removed {}".format(fp.name))
 
     else:
-        logger.debug('action: - reading from stdin')
+        logger.debug("action: - reading from stdin")
 
         filename = "file1.txt" if args.filename is None else args.filename
         files.append(FileInfo(filename, sys.stdin.read()))
@@ -592,20 +592,20 @@ def handle_gist_create(gapi, args, config, editor, *vargs):
 
     # Encrypt the files or leave them unmodified
     if args.encrypt:
-        logger.debug('action: - encrypting content')
+        logger.debug("action: - encrypting content")
 
-        fingerprint = config.get('gist', 'gnupg-fingerprint')
-        gnupghome = config.get('gist', 'gnupg-homedir')
+        fingerprint = config.get("gist", "gnupg-fingerprint")
+        gnupghome = config.get("gist", "gnupg-homedir")
 
         gpg = gnupg.GPG(gnupghome=gnupghome, use_agent=True)
         data = {}
         for file in files:
-            cypher = gpg.encrypt(file.content.encode('utf-8'), fingerprint)
-            content = cypher.data.decode('utf-8')
+            cypher = gpg.encrypt(file.content.encode("utf-8"), fingerprint)
+            content = cypher.data.decode("utf-8")
 
-            data['{}.asc'.format(file.name)] = {'content': content}
+            data["{}.asc".format(file.name)] = {"content": content}
     else:
-        data = {file.name: {'content': file.content} for file in files}
+        data = {file.name: {"content": file.content} for file in files}
 
     print(gapi.create(args.desc, data, args.public))
 
@@ -618,8 +618,8 @@ def handle_gist_clone(gapi, args, *vargs):
         args: parsed command line arguments
 
     """
-    logger.debug(u'action: clone')
-    logger.debug(u'action: - {} as {}'.format(args.id, args.name))
+    logger.debug(u"action: clone")
+    logger.debug(u"action: - {} as {}".format(args.id, args.name))
     gapi.clone(args.id, args.name)
 
 
@@ -631,8 +631,8 @@ def handle_gist_version(gapi, args, *vargs):
         args: parsed command line arguments
 
     """
-    logger.debug(u'action: version')
-    print('v{}'.format(gist.__version__))
+    logger.debug(u"action: version")
+    print("v{}".format(gist.__version__))
 
 
 def handle_gist_help(gapi, args, *vargs):
@@ -643,7 +643,7 @@ def handle_gist_help(gapi, args, *vargs):
         args: parsed command line arguments
 
     """
-    logger.debug(u'action: help')
+    logger.debug(u"action: help")
     print(__doc__)
 
 
@@ -851,21 +851,21 @@ def main(argv=sys.argv[1:], config=None):
         # Read in the configuration file
         if config is None:
             config = configparser.ConfigParser()
-            config_path = os.path.expanduser(os.sep.join(['~', '.gist']))
+            config_path = os.path.expanduser(os.sep.join(["~", ".gist"]))
             config_path = alternative_config(config_path)
             config_path = xdg_data_config(config_path)
             try:
                 with open(config_path) as fp:
                     config.read_file(fp)
             except Exception as e:
-                message = 'Unable to load configuration file: {0}'.format(e)
+                message = "Unable to load configuration file: {0}".format(e)
                 raise UserError(message)
 
         try:
-            log_level = config.get('gist', 'log-level').upper()
-            logging.getLogger('gist').setLevel(log_level)
+            log_level = config.get("gist", "log-level").upper()
+            logging.getLogger("gist").setLevel(log_level)
         except Exception:
-            logging.getLogger('gist').setLevel(logging.ERROR)
+            logging.getLogger("gist").setLevel(logging.ERROR)
 
         # Determine the editor to use
         editor = None
@@ -874,7 +874,7 @@ def main(argv=sys.argv[1:], config=None):
         editor = configuration_editor(config, editor)
 
         if editor is None:
-            raise UserError('Unable to find an editor.')
+            raise UserError("Unable to find an editor.")
 
         token = get_personal_access_token(config)
         gapi = gist.GistAPI(token=token, editor=editor)

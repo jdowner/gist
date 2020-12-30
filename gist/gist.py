@@ -180,7 +180,7 @@ class GistAPI(object):
                 "Accept-Encoding": "identity, deflate, compress, gzip",
                 "User-Agent": "python-requests/1.2.0",
                 "Accept": "application/vnd.github.v3.base64",
-                "Authorization": "token {}".format(self.token)
+                "Authorization": "token {}".format(self.token),
             },
             params={"per_page": 100},
         )
@@ -205,10 +205,11 @@ class GistAPI(object):
             for gist in response:
                 try:
                     gists.append(
-                        GistInfo(gist["id"],
-                                 gist["public"],
-                                 gist["description"],
-                                 )
+                        GistInfo(
+                            gist["id"],
+                            gist["public"],
+                            gist["description"],
+                        )
                     )
 
                 except KeyError:

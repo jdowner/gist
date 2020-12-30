@@ -28,7 +28,8 @@ def kill_gpg_agent(homedir):
     """
     try:
         subprocess.call(
-                shlex.split("gpgconf --homedir {} --kill gpg-agent".format(homedir)))
+            shlex.split("gpgconf --homedir {} --kill gpg-agent".format(homedir))
+        )
     except OSError as e:
         if e.errno != errno.ENOENT:
             raise
@@ -64,25 +65,26 @@ def gpg(gnupghome):
 
 @pytest.fixture
 def fingerprint(gpg):
-    return gpg.list_keys()[0]['fingerprint']
+    return gpg.list_keys()[0]["fingerprint"]
 
 
 @pytest.fixture
 def encrypt(gpg, fingerprint):
     def impl(text):
-        data = text.encode('utf-8')
+        data = text.encode("utf-8")
         crypt = gpg.encrypt(data, fingerprint)
-        return crypt.data.decode('utf-8')
+        return crypt.data.decode("utf-8")
 
     return impl
+
 
 @pytest.fixture
 def decrypt(gpg):
     def impl(text):
         """Return the text as a decrypted string"""
-        data = text.encode('utf-8')
+        data = text.encode("utf-8")
         crypt = gpg.decrypt(data)
-        return crypt.data.decode('utf-8')
+        return crypt.data.decode("utf-8")
 
     return impl
 

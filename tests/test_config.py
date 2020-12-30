@@ -17,9 +17,9 @@ def test_get_value_from_command():
     return the string printed to stdout by the command, otherwise ensure
     that the value passed to the function is returned.
     """
-    assert 'magic token' == gist.client.get_value_from_command('!echo "\nmagic token"')
-    assert 'magic token' == gist.client.get_value_from_command(' !echo "magic token\n"')
-    assert 'magic token' == gist.client.get_value_from_command('magic token')
+    assert "magic token" == gist.client.get_value_from_command('!echo "\nmagic token"')
+    assert "magic token" == gist.client.get_value_from_command(' !echo "magic token\n"')
+    assert "magic token" == gist.client.get_value_from_command("magic token")
 
 
 def test_get_personal_access_token_missing(config):
