@@ -14,12 +14,10 @@ import sys
 import tempfile
 import unittest
 import json
+
 import responses
 
 import gist
-
-
-# import the CLI script as a module of gist
 import gist.client
 
 
@@ -183,78 +181,6 @@ class TestGist(unittest.TestCase):
                 }
 
         gist.GistAPI(token="f00").create(desc, files, public)
-
-
-class TestGistCLI(unittest.TestCase):
-    def setUp(self):
-        os.environ["EDITOR"] = "gist-placeholder"
-
-        self.config = configparser.ConfigParser()
-        self.config.add_section("gist")
-        self.config.set("gist", "token", "f00")
-
-    def command_response(self, cmd):
-        buf = io.StringIO()
-        with redirect_stdout(buf):
-            gist.client.main(argv=shlex.split(cmd), config=self.config)
-
-        return buf.getvalue().splitlines()
-
-    @responses.activate
-    def test_list(self):
-        responses.add(responses.GET, 'https://api.github.com/gists',
-                body=json.dumps([
-                    {
-                        'id': 1,
-                        'description': 'test-desc-A',
-                        'public': True,
-                        },
-                    {
-                        'id': 2,
-                        'description': 'test-desc-\u212C',
-                        'public': False,
-                        },
-                    ]),
-                status=200,
-                )
-
-        gists = self.command_response('list')
-        gistA = gists[0]
-        gistB = gists[1]
-
-        self.assertEqual(gistA, '1 + test-desc-A')
-        self.assertEqual(gistB, '2 - test-desc-\u212C')
-
-    @responses.activate
-    def test_content(self):
-        def b64encode(s):
-            return base64.b64encode(s.encode('utf-8')).decode('utf-8')
-
-        responses.add(responses.GET, 'https://api.github.com/gists/1',
-                body=json.dumps({
-                    "files": {
-                        "file-A.txt": {
-                            "filename": "file-A.txt",
-                            "content": b64encode("test-content-A"),
-                            },
-                        "file-B.txt": {
-                            "filename": "file-B.txt",
-                            "content": b64encode("test-content-\u212C"),
-                            }
-                        },
-                    "description": "test-gist",
-                    "public": True,
-                    "id": 1,
-                    }),
-                status=200,
-                )
-
-        lines = self.command_response('content 1')
-
-        self.assertIn('file-A.txt:', lines)
-        self.assertIn('test-content-A', lines)
-        self.assertIn('file-B.txt:', lines)
-        self.assertIn('test-content-\u212C', lines)
 
 
 class TestGistGPG(unittest.TestCase):
