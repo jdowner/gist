@@ -25,7 +25,7 @@ style:
 	pycodestyle --config=./setup.cfg $(FILES)
 
 tox:
-	tox --skip-missing-interpreters --develop
+	tox --skip-missing-interpreters --develop --recreate
 
 clean:
 	git clean -xdf
