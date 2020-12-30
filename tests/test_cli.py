@@ -13,14 +13,6 @@ import gist
 import gist.client
 
 
-@contextlib.contextmanager
-def redirect_stdout(buf):
-    original = sys.stdout
-    sys.stdout = buf
-    yield
-    sys.stdout = original
-
-
 def b64encode(s):
     """Return the base64 encoding of a string
 
@@ -33,32 +25,6 @@ def b64encode(s):
 
     """
     return base64.b64encode(s.encode('utf-8')).decode('utf-8')
-
-
-@pytest.fixture
-def config():
-    cfg = configparser.ConfigParser()
-    cfg.add_section("gist")
-    cfg.set("gist", "token", "f00")
-
-    return cfg
-
-
-@pytest.fixture
-def editor(monkeypatch):
-    monkeypatch.setenv("EDITOR", "gist-placeholder")
-
-
-@pytest.fixture
-def gist_command(config):
-    def impl(cmd):
-        buf = io.StringIO()
-        with redirect_stdout(buf):
-            gist.client.main(argv=shlex.split(cmd), config=config)
-
-        return buf.getvalue().splitlines()
-
-    return impl
 
 
 @responses.activate
