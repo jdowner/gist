@@ -1,7 +1,7 @@
 import base64
 import collections
 import contextlib
-import simplejson as json
+import json
 import os
 import re
 import requests

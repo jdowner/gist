@@ -128,6 +128,7 @@ Commands:
 import argparse
 import codecs
 import collections
+import json
 import locale
 import logging
 import os
@@ -140,7 +141,6 @@ import sys
 import tempfile
 
 import gnupg
-import simplejson as json
 
 from . import gist
 

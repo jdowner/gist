@@ -341,7 +341,6 @@ Dependencies
 
 * >=python-gnupg-0.4.1
 * requests
-* simplejson
 
 The following packages are required for testing,
 

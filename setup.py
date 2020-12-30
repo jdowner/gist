@@ -37,7 +37,7 @@ setuptools.setup(
             ],
         )
     ],
-    install_requires=["docopt", "python-gnupg>=0.4.1", "requests", "simplejson"],
+    install_requires=["python-gnupg>=0.4.1", "requests"],
     extras_require={"dev": ["responses", "pycodestyle"]},
     tests_require=["pycodestyle", "responses", "tox"],
     platforms=["Unix", "Windows"],
