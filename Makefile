@@ -1,5 +1,4 @@
 SHELL=/bin/bash
-FILES=gist/gist.py gist/client.py
 PYTHON=/usr/bin/env python
 
 build:
@@ -20,9 +19,6 @@ uninstall:
 
 test:
 	$(PYTHON) -m pytest -s -v tests
-
-style:
-	pycodestyle --config=./setup.cfg $(FILES)
 
 tox:
 	tox --skip-missing-interpreters --develop --recreate
