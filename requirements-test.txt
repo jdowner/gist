@@ -1,3 +1,5 @@
 pytest
+pytest-black
+pytest-flake8
 responses
 tox

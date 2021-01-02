@@ -1,6 +1,10 @@
 SHELL=/bin/bash
 PYTHON=/usr/bin/env python
 
+TEST_FILES:=$(wildcard tests/*.py)
+SRC_FILES:=$(wildcard gist/*.py)
+CFG_FILES:=setup.py
+
 build:
 	$(PYTHON) setup.py build
 
@@ -18,7 +22,11 @@ uninstall:
 	fi
 
 test:
-	$(PYTHON) -m pytest -s -v tests
+	$(PYTHON) -m pytest --ff -x -v -s tests
+
+lint:
+	@$(PYTHON) -m black --check $(TEST_FILES) $(SRC_FILES) $(CFG_FILES)
+	@$(PYTHON) -m flake8 $(TEST_FILES) $(SRC_FILES) $(CFG_FILES)
 
 tox:
 	tox --skip-missing-interpreters --develop --recreate

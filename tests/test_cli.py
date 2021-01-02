@@ -1,16 +1,7 @@
 import base64
-import configparser
-import contextlib
-import io
 import json
-import shlex
-import sys
 
-import pytest
 import responses
-
-import gist
-import gist.client
 
 
 def b64encode(s):
@@ -38,8 +29,8 @@ def test_list(editor, gist_command):
         message.append(
             {
                 "id": id,
-                "description": "test-{}".format(id),
-                "public": id % 2 == 0,
+                "description": desc,
+                "public": public,
             }
         )
 

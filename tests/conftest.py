@@ -1,9 +1,10 @@
-import subprocess
-import shlex
 import configparser
+import errno
+import shlex
+import subprocess
 
-import gnupg
 import gist.client
+import gnupg
 import pytest
 
 

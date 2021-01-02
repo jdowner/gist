@@ -1,16 +1,7 @@
 import base64
-import configparser
-import errno
-import gnupg
 import json
 import re
-import shlex
-import subprocess
-import sys
 
-import gist
-import gist.client
-import pytest
 import responses
 
 

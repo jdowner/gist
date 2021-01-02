@@ -443,7 +443,7 @@ def handle_gist_fork(gapi, args, *vargs):
     """
     logger.debug(u"action: fork")
     logger.debug(u"action: - {}".format(args.id))
-    info = gapi.fork(args.id)
+    _ = gapi.fork(args.id)
 
 
 def handle_gist_files(gapi, args, *vargs):

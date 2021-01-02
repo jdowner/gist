@@ -163,7 +163,7 @@ def test_cli_parser_gist_version_valid(monkeypatch):
     gist.client.main(argv=shlex.split("version"))
 
 
-def test_cli_parser_gist_clone_invalid(monkeypatch):
+def test_cli_parser_gist_version_invalid(monkeypatch):
     handler = unittest.mock.Mock()
     monkeypatch.setattr(gist.client, "handle_gist_version", handler)
 
