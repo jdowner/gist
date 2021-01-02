@@ -1,8 +1,17 @@
+import contextlib
+import os
 import shlex
 import unittest.mock
 
 import gist.client
 import pytest
+
+
+@pytest.fixture(autouse=True)
+def suppress_stderr():
+    with open(os.devnull, "w") as fd:
+        with contextlib.redirect_stderr(fd):
+            yield
 
 
 @pytest.mark.parametrize(
