@@ -28,11 +28,11 @@ def suppress_stderr():
         "create 'desc' --public --encrypt",
     ],
 )
-def test_cli_parser_gist_create_valid(monkeypatch, command):
+def test_cli_parser_gist_create_valid(monkeypatch, command, config):
     handler = unittest.mock.Mock()
     monkeypatch.setattr(gist.client, "handle_gist_create", handler)
 
-    gist.client.main(argv=shlex.split(command))
+    gist.client.main(argv=shlex.split(command), config=config)
 
 
 @pytest.mark.parametrize(
@@ -44,53 +44,53 @@ def test_cli_parser_gist_create_valid(monkeypatch, command):
         "create --public --encrypt 'desc' --filename file1 file2",
     ],
 )
-def test_cli_parser_gist_create_invalid(monkeypatch, command):
+def test_cli_parser_gist_create_invalid(monkeypatch, command, config):
     handler = unittest.mock.Mock()
     monkeypatch.setattr(gist.client, "handle_gist_create", handler)
 
     with pytest.raises(SystemExit):
-        gist.client.main(argv=shlex.split(command))
+        gist.client.main(argv=shlex.split(command), config=config)
 
 
-def test_cli_parser_gist_list_valid(monkeypatch):
+def test_cli_parser_gist_list_valid(monkeypatch, config):
     handler = unittest.mock.Mock()
     monkeypatch.setattr(gist.client, "handle_gist_list", handler)
 
-    gist.client.main(argv=shlex.split("list"))
+    gist.client.main(argv=shlex.split("list"), config=config)
 
 
-def test_cli_parser_gist_list_invalid(monkeypatch):
+def test_cli_parser_gist_list_invalid(monkeypatch, config):
     handler = unittest.mock.Mock()
     monkeypatch.setattr(gist.client, "handle_gist_list", handler)
 
     with pytest.raises(SystemExit):
-        gist.client.main(argv=shlex.split("list --no-an-option"))
+        gist.client.main(argv=shlex.split("list --no-an-option"), config=config)
 
 
 @pytest.mark.parametrize("cmd", ["edit", "fork", "info", "files", "archive"])
-def test_cli_parser_gist_generic_valid(monkeypatch, cmd):
+def test_cli_parser_gist_generic_valid(monkeypatch, cmd, config):
     handler = unittest.mock.Mock()
     monkeypatch.setattr(gist.client, "handle_gist_{}".format(cmd), handler)
 
-    gist.client.main(argv=shlex.split("{} arg1".format(cmd)))
+    gist.client.main(argv=shlex.split("{} arg1".format(cmd)), config=config)
 
 
 @pytest.mark.parametrize("args", ["", "arg1 arg2"])
 @pytest.mark.parametrize("cmd", ["edit", "fork", "info", "files", "archive"])
-def test_cli_parser_gist_generic_invalid(monkeypatch, cmd, args):
+def test_cli_parser_gist_generic_invalid(monkeypatch, cmd, args, config):
     handler = unittest.mock.Mock()
     monkeypatch.setattr(gist.client, "handle_gist_{}".format(cmd), handler)
 
     with pytest.raises(SystemExit):
-        gist.client.main(argv=shlex.split("{} {}".format(cmd, args)))
+        gist.client.main(argv=shlex.split("{} {}".format(cmd, args)), config=config)
 
 
 @pytest.mark.parametrize("command", ["description id desc", "description id 'desc'"])
-def test_cli_parser_gist_description_valid(monkeypatch, command):
+def test_cli_parser_gist_description_valid(monkeypatch, command, config):
     handler = unittest.mock.Mock()
     monkeypatch.setattr(gist.client, "handle_gist_description", handler)
 
-    gist.client.main(argv=shlex.split(command))
+    gist.client.main(argv=shlex.split(command), config=config)
 
 
 @pytest.mark.parametrize(
@@ -100,12 +100,12 @@ def test_cli_parser_gist_description_valid(monkeypatch, command):
         "description id foo bar",
     ],
 )
-def test_cli_parser_gist_description_invalid(monkeypatch, command):
+def test_cli_parser_gist_description_invalid(monkeypatch, command, config):
     handler = unittest.mock.Mock()
     monkeypatch.setattr(gist.client, "handle_gist_description", handler)
 
     with pytest.raises(SystemExit):
-        gist.client.main(argv=shlex.split(command))
+        gist.client.main(argv=shlex.split(command), config=config)
 
 
 @pytest.mark.parametrize(
@@ -118,11 +118,11 @@ def test_cli_parser_gist_description_invalid(monkeypatch, command):
         "content --decrypt id file1",
     ],
 )
-def test_cli_parser_gist_content_valid(monkeypatch, command):
+def test_cli_parser_gist_content_valid(monkeypatch, command, config):
     handler = unittest.mock.Mock()
     monkeypatch.setattr(gist.client, "handle_gist_content", handler)
 
-    gist.client.main(argv=shlex.split(command))
+    gist.client.main(argv=shlex.split(command), config=config)
 
 
 @pytest.mark.parametrize(
@@ -133,12 +133,12 @@ def test_cli_parser_gist_content_valid(monkeypatch, command):
         "content id file1 file2 --decrypt",
     ],
 )
-def test_cli_parser_gist_content_invalid(monkeypatch, command):
+def test_cli_parser_gist_content_invalid(monkeypatch, command, config):
     handler = unittest.mock.Mock()
     monkeypatch.setattr(gist.client, "handle_gist_content", handler)
 
     with pytest.raises(SystemExit):
-        gist.client.main(argv=shlex.split(command))
+        gist.client.main(argv=shlex.split(command), config=config)
 
 
 @pytest.mark.parametrize(
@@ -149,32 +149,32 @@ def test_cli_parser_gist_content_invalid(monkeypatch, command):
         "clone id 'long name'",
     ],
 )
-def test_cli_parser_gist_clone_valid(monkeypatch, command):
+def test_cli_parser_gist_clone_valid(monkeypatch, command, config):
     handler = unittest.mock.Mock()
     monkeypatch.setattr(gist.client, "handle_gist_clone", handler)
 
-    gist.client.main(argv=shlex.split(command))
+    gist.client.main(argv=shlex.split(command), config=config)
 
 
 @pytest.mark.parametrize("command", ["clone", "clone id name1 name2"])
-def test_cli_parser_gist_clone_invalid(monkeypatch, command):
+def test_cli_parser_gist_clone_invalid(monkeypatch, command, config):
     handler = unittest.mock.Mock()
     monkeypatch.setattr(gist.client, "handle_gist_clone", handler)
 
     with pytest.raises(SystemExit):
-        gist.client.main(argv=shlex.split(command))
+        gist.client.main(argv=shlex.split(command), config=config)
 
 
-def test_cli_parser_gist_version_valid(monkeypatch):
+def test_cli_parser_gist_version_valid(monkeypatch, config):
     handler = unittest.mock.Mock()
     monkeypatch.setattr(gist.client, "handle_gist_version", handler)
 
-    gist.client.main(argv=shlex.split("version"))
+    gist.client.main(argv=shlex.split("version"), config=config)
 
 
-def test_cli_parser_gist_version_invalid(monkeypatch):
+def test_cli_parser_gist_version_invalid(monkeypatch, config):
     handler = unittest.mock.Mock()
     monkeypatch.setattr(gist.client, "handle_gist_version", handler)
 
     with pytest.raises(SystemExit):
-        gist.client.main(argv=shlex.split("version arg"))
+        gist.client.main(argv=shlex.split("version arg"), config=config)
