@@ -1,6 +1,7 @@
 import base64
 import json
 import re
+import sys
 
 import responses
 
@@ -138,12 +139,17 @@ def test_create(gist_api):
 
 
 @responses.activate
-def test_gnupg_create_from_file(decrypt, gist_command, tmp_path):
+def test_gnupg_create_from_file(monkeypatch, decrypt, gist_command, tmp_path):
     """
     This test checks that the content from a gist created from a file is
     properly encrypted.
 
     """
+
+    # This is a work-around for testing with github actions. For some reason, stdin is
+    # no a TTY when run from there when it is normally. Hopefull, I can find a bettter
+    # solution in the future.
+    monkeypatch.setattr(sys.stdin, "isatty", lambda: True)
 
     def request_handler(request):
         # Decrypt the content of the request and check that it matches the
