@@ -4,12 +4,11 @@ import contextlib
 import json
 import os
 import re
-import requests
 import shutil
 import tarfile
 import tempfile
 
-__version__ = "0.9.2"
+import requests
 
 requests.packages.urllib3.disable_warnings()
 

@@ -143,6 +143,7 @@ import tempfile
 import gnupg
 
 from . import gist
+from . import version
 
 if platform.system() != "Windows":
     # those modules exist everywhere but on Windows
@@ -632,7 +633,7 @@ def handle_gist_version(gapi, args, *vargs):
 
     """
     logger.debug(u"action: version")
-    print("v{}".format(gist.__version__))
+    print("v{}".format(version.__version__))
 
 
 def handle_gist_help(gapi, args, *vargs):

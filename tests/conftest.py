@@ -4,6 +4,7 @@ import shlex
 import subprocess
 
 import gist.client
+import gist.gist
 import gnupg
 import pytest
 
@@ -48,7 +49,7 @@ def editor(monkeypatch):
 
 @pytest.fixture
 def gist_api():
-    return gist.GistAPI(token="f00")
+    return gist.gist.GistAPI(token="f00")
 
 
 @pytest.fixture
