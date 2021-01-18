@@ -33,3 +33,6 @@ tox:
 
 clean:
 	git clean -xdf
+
+requirements:
+	pip install -r requirements-test.txt
