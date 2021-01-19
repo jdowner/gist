@@ -29,7 +29,7 @@ lint:
 	@$(PYTHON) -m flake8 $(TEST_FILES) $(SRC_FILES) $(CFG_FILES)
 
 tox:
-	tox --skip-missing-interpreters --develop --recreate
+	tox --develop
 
 clean:
 	git clean -xdf
