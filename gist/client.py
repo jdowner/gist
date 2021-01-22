@@ -132,6 +132,7 @@ import json
 import locale
 import logging
 import os
+import pathlib
 import platform
 import re
 import shlex
@@ -348,11 +349,8 @@ def alternative_config(default):
         default: the default to use if ~/.config/gist does not exist.
 
     """
-    config_path = os.path.expanduser(os.sep.join(["~", ".config", "gist"]))
-    if os.path.isfile(config_path):
-        return config_path
-    else:
-        return default
+    config_path = pathlib.Path("~/.config/gist").expanduser()
+    return config_path if config_path.is_file() else default
 
 
 def xdg_data_config(default):
@@ -364,10 +362,10 @@ def xdg_data_config(default):
             file.
 
     """
-    config = os.environ.get("XDG_DATA_HOME", "").strip()
-    if config != "":
-        config_path = os.path.join(config, "gist")
-        if os.path.isfile(config_path):
+    config_path = os.environ.get("XDG_DATA_HOME", None)
+    if config_path is not None:
+        config_path = pathlib.Path(config_path) / "gist"
+        if config_path.is_file():
             return config_path
 
     return default
