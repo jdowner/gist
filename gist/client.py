@@ -342,6 +342,17 @@ def configuration_editor(config, default):
         return default
 
 
+def homedir_config(default):
+    """Return the path to the config file in the users home directory
+
+    Argument:
+        default: the default to use if ~/.gist does not exist.
+
+    """
+    config_path = pathlib.Path("~").expanduser() / ".gist"
+    return config_path if config_path.is_file() else default
+
+
 def alternative_config(default):
     """Return the path to the config file in .config directory
 
@@ -369,6 +380,53 @@ def xdg_data_config(default):
             return config_path
 
     return default
+
+
+def environment_config(default):
+    """Return the path to the config file defined in an environment variable
+
+    Argument:
+        default: the default to use if the environment variable GIST_CONFIG has not been
+        set.
+
+    """
+    config_path = os.environ.get("GIST_CONFIG", None)
+    if config_path is not None:
+        config_path = pathlib.Path(config_path)
+        if config_path.is_file():
+            return config_path
+
+    return default
+
+
+def load_config_file():
+    """
+    Returns a ConfigParser object with any gist related configuration data
+    """
+
+    config = configparser.ConfigParser()
+
+    config_path = homedir_config(None)
+    config_path = alternative_config(config_path)
+    config_path = xdg_data_config(config_path)
+    config_path = environment_config(config_path)
+
+    if config_path is None:
+        raise UserError("unable to find config file")
+
+    try:
+        with open(config_path) as fp:
+            config.read_file(fp)
+
+    except Exception as e:
+        raise UserError("Unable to load configuration file: {0}".format(e))
+
+    # Make sure the config contains a gist section. If it does not, create one so
+    # that the following code can simply assume it exists.
+    if not config.has_section("gist"):
+        config.add_section("gist")
+
+    return config
 
 
 def handle_gist_list(gapi, args, *vargs):
@@ -849,16 +907,7 @@ def main(argv=sys.argv[1:], config=None):
 
         # Read in the configuration file
         if config is None:
-            config = configparser.ConfigParser()
-            config_path = os.path.expanduser(os.sep.join(["~", ".gist"]))
-            config_path = alternative_config(config_path)
-            config_path = xdg_data_config(config_path)
-            try:
-                with open(config_path) as fp:
-                    config.read_file(fp)
-            except Exception as e:
-                message = "Unable to load configuration file: {0}".format(e)
-                raise UserError(message)
+            config = load_config_file()
 
         try:
             log_level = config.get("gist", "log-level").upper()
