@@ -128,6 +128,7 @@ Commands:
 import argparse
 import codecs
 import collections
+import configparser
 import json
 import locale
 import logging
@@ -151,10 +152,6 @@ if platform.system() != "Windows":
     import termios
     import fcntl
 
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
 
 logger = logging.getLogger("gist")
 
