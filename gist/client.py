@@ -446,7 +446,7 @@ def handle_gist_list(gapi, args, *vargs):
             logger.error("unable to write gist {}".format(info.id))
 
 
-def handle_gist_edit(gapi, args):
+def handle_gist_edit(gapi, args, *vargs):
     """Handle 'gist edit' command
 
     Arguments:
