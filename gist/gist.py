@@ -1,15 +1,14 @@
 import base64
 import collections
 import contextlib
-import simplejson as json
+import json
 import os
 import re
-import requests
 import shutil
 import tarfile
 import tempfile
 
-__version__ = "0.9.2"
+import requests
 
 requests.packages.urllib3.disable_warnings()
 
@@ -180,7 +179,7 @@ class GistAPI(object):
                 "Accept-Encoding": "identity, deflate, compress, gzip",
                 "User-Agent": "python-requests/1.2.0",
                 "Accept": "application/vnd.github.v3.base64",
-                "Authorization": "token {}".format(self.token)
+                "Authorization": "token {}".format(self.token),
             },
             params={"per_page": 100},
         )
@@ -205,10 +204,11 @@ class GistAPI(object):
             for gist in response:
                 try:
                     gists.append(
-                        GistInfo(gist["id"],
-                                 gist["public"],
-                                 gist["description"],
-                                 )
+                        GistInfo(
+                            gist["id"],
+                            gist["public"],
+                            gist["description"],
+                        )
                     )
 
                 except KeyError:

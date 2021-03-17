@@ -1,0 +1,6 @@
+-r requirements.txt
+pytest
+pytest-black
+pytest-flake8
+responses
+tox

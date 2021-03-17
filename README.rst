@@ -6,13 +6,13 @@ GIST
 several methods for inspecting a users gists, and the ability to easily create
 them.
 
-.. image:: https://travis-ci.org/jdowner/gist.svg?branch=master
-    :target: https://travis-ci.org/jdowner/gist
+.. image:: https://github.com/jdowner/gist/workflows/gist%20continuous%20integration/badge.svg
+    :target: https://github.com/jdowner/gist
 
 
 Requirements
 --------------------------------------------------
-Python 3.5, 3.6 or 3.7 is required.
+Python 3.6, 3.7, 3.8, or 3.9 is required.
 
 
 Installation
@@ -22,19 +22,19 @@ To install 'gist' you can either use,
 
 ::
 
-  $ sudo pip3 install python-gist
+  $ pip3 install python-gist
 
 or,
 
 ::
 
-  $ sudo python3 setup.py install
+  $ python3 setup.py install
 
 or,
 
 ::
 
-  $ sudo make install
+  $ make install
 
 This will install the python package 'gist' to the standard location for your
 system and copy the license, readme, and some shell scripts into
@@ -52,8 +52,9 @@ can be enable by adding the following to your .bashrc file,
   source /usr/local/share/gist/gist.bash
 
 The other scripts, gist-fzf.bash and fist-fzsl.bash, provide fuzzy matching of
-gists using an ncurses interface (NB: these scripts require fzf and fzsl,
-respectively, to be installed -- see Dependencies).
+gists using an ncurses interface (NB: these scripts require
+`fzf <https://github.com/junegunn/fzf>`_ and `fzsl <https://github.com/jsbronder/fzsl>`_,
+respectively).
 
 The gist.fish script provides tab completion for the fish shell, and should be
 copied to ~/.config/fish/completions.
@@ -332,27 +333,6 @@ The 'delete-tempfiles' option is used when gists are created from an editor.
 The editor writes its contents to a temporary file, which is deleted by
 default. The default behavior can be overridden by using the 'delete-tempfiles'
 flag.
-
-
-Dependencies
---------------------------------------------------
-
-'gist' currently depends on,
-
-* >=python-gnupg-0.4.1
-* requests
-* simplejson
-
-The following packages are required for testing,
-
-* responses
-* tox
-* pep8
-
-Optional packages (for fuzzy matching)
-
-* fzf   (https://github.com/junegunn/fzf)
-* fzsl  (https://github.com/jsbronder/fzsl)
 
 
 Contributors

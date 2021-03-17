@@ -1,6 +1,9 @@
 SHELL=/bin/bash
-FILES=gist/gist.py gist/client.py
 PYTHON=/usr/bin/env python
+
+TEST_FILES:=$(wildcard tests/*.py)
+SRC_FILES:=$(wildcard gist/*.py)
+CFG_FILES:=setup.py
 
 build:
 	$(PYTHON) setup.py build
@@ -19,13 +22,17 @@ uninstall:
 	fi
 
 test:
-	$(PYTHON) setup.py test
+	$(PYTHON) -m pytest --ff -x -v -s tests
 
-style:
-	pycodestyle --config=./setup.cfg $(FILES)
+lint:
+	@$(PYTHON) -m black --check $(TEST_FILES) $(SRC_FILES) $(CFG_FILES)
+	@$(PYTHON) -m flake8 $(TEST_FILES) $(SRC_FILES) $(CFG_FILES)
 
 tox:
-	tox --skip-missing-interpreters --develop
+	tox --develop
 
 clean:
 	git clean -xdf
+
+requirements:
+	pip install -r requirements-test.txt
