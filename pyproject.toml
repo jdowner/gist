@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "gist"
-version = "0.10.2"
+name = "python-gist"
+version = "0.10.3"
 description = "Manage github gists"
 authors = ["Joshua Downer <joshua.downer@gmail.com>"]
 license = "MIT"
@@ -27,6 +27,10 @@ classifiers = [
   "Topic :: Software Development :: Version Control",
   "Topic :: Utilities",
 ]
+packages = [
+  {include = "gist"},
+]
+
 
 [tool.poetry.dependencies]
 python = "^3.6"
