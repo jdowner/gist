@@ -18,34 +18,23 @@ Python 3.6, 3.7, 3.8, or 3.9 is required.
 Installation
 --------------------------------------------------
 
-To install 'gist' you can either use,
+The preferred way to install 'gist' is from pypi.org using pip (or pip3),
 
 ::
 
-  $ pip3 install python-gist
+  $ pip install python-gist
 
-or,
-
-::
-
-  $ python3 setup.py install
-
-or,
+Alternatively, you can clone the repository and install it manually,
 
 ::
 
-  $ make install
+  $ pip install .
 
-This will install the python package 'gist' to the standard location for your
-system and copy the license, readme, and some shell scripts into
-/usr/share/gist.
-
-There are also script to provide tab-completion for bash, fish, and zsh shells.
-The scripts are installed in /usr/local/share/gist.
-
-There are 3 different scripts for tab-completion in bash: gist.bash,
-gist-fzf.bash, and gist-fzsl.bash. The first, provides simple tab completion and
-can be enable by adding the following to your .bashrc file,
+The 'share' directory contains a set of shell scripts that provide tab
+completion and fuzzy search for gist. There are 3 different scripts for
+tab-completion in bash: gist.bash, gist-fzf.bash, and gist-fzsl.bash. The first
+provides simple tab completion and can be enable by adding the following to
+your .bashrc file,
 
 ::
 
@@ -70,7 +59,10 @@ To check that 'gist' is operating correctly, you can run the unit tests with,
 
 ::
 
-  $ python3 setup.py test
+  $ make test
+
+Note that running the unit tests requires `poetry <https://python-poetry.org/>`_
+to be available on your PATH.
 
 
 Getting started
