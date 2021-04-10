@@ -1,0 +1,52 @@
+[tool.poetry]
+name = "gist"
+version = "0.10.1"
+description = "Manage github gists"
+authors = ["Joshua Downer <joshua.downer@gmail.com>"]
+license = "MIT"
+readme = "README.rst"
+keywords = ["gist", "github", "git"]
+homepage = "https://github.com/jdowner/gist"
+repository = "https://github.com/jdowner/gist"
+documentation = "https://github.com/jdowner/gist"
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Intended Audience :: End Users/Desktop",
+  "Intended Audience :: System Administrators",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: Unix",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.6",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Topic :: Software Development",
+  "Topic :: Software Development :: Version Control",
+  "Topic :: Utilities",
+]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+requests = "^2.25.1"
+python-gnupg = "^0.4.7"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.2"
+responses = "^0.13.1"
+tox = "^3.23.0"
+tox-poetry = "^0.3.0"
+flake8 = "^3.9.0"
+flake8-black = "^0.2.1"
+flake8-bugbear = "^21.3.2"
+flake8-import-order = "^0.18.1"
+
+[tool.poetry.scripts]
+gist = "gist.client:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+

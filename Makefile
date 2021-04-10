@@ -1,38 +1,34 @@
 SHELL=/bin/bash
-PYTHON=/usr/bin/env python
 
 TEST_FILES:=$(wildcard tests/*.py)
 SRC_FILES:=$(wildcard gist/*.py)
-CFG_FILES:=setup.py
+
+REQ_BINS := poetry
+$(foreach bin,$(REQ_BINS),\
+    $(if $(shell which $(bin) 2> /dev/null),,$(error Missing required package `$(bin)`)))
+
+.PHONY: build test lint tox clean export
+
+.poetry-install-run:
+	@poetry install --remove-untracked
+	@touch .poetry-install-run
 
 build:
-	$(PYTHON) setup.py build
+	@poetry build
 
-install: build
-	$(PYTHON) setup.py install \
-		--record installed-files.txt \
-		--single-version-externally-managed
+test: .poetry-install-run
+	@poetry run pytest --ff -x -v -s tests
 
-uninstall:
-	@if [ -e "installed-files.txt" ]; then \
-		while read path; do \
-			echo $${path}; \
-			rm -rf $${path}; \
-		done < "installed-files.txt"; \
-	fi
+lint: .poetry-install-run
+	@poetry run black --quiet --check $(TEST_FILES) $(SRC_FILES)
+	@poetry run flake8 $(TEST_FILES) $(SRC_FILES)
 
-test:
-	$(PYTHON) -m pytest --ff -x -v -s tests
-
-lint:
-	@$(PYTHON) -m black --check $(TEST_FILES) $(SRC_FILES) $(CFG_FILES)
-	@$(PYTHON) -m flake8 $(TEST_FILES) $(SRC_FILES) $(CFG_FILES)
-
-tox:
-	tox --develop
+tox: .poetry-install-run
+	@poetry run tox
 
 clean:
 	git clean -xdf
 
-requirements:
-	pip install -r requirements-test.txt
+export:
+	@poetry export --without-hashes -o requirements.txt
+	@poetry export --dev --without-hashes -o requirements-dev.txt
