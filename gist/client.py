@@ -227,20 +227,17 @@ def terminal_width():
         pass
 
 
-def elide(txt, width=terminal_width()):
-    """Elide the provided string
-
-    The string is elided to the specified width, which defaults to the width of
-    the terminal.
+def elide(txt):
+    """Elide the text to the width of the current terminal.
 
     Arguments:
         txt: the string to potentially elide
-        width: the maximum permitted length of the string
 
     Returns:
         A string that is no longer than the specified width.
 
     """
+    width = terminal_width()
     if width is not None and width > 3:
         try:
             if len(txt) > width:
