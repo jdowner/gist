@@ -135,7 +135,6 @@ import logging
 import os
 import pathlib
 import platform
-import re
 import shlex
 import struct
 import subprocess
@@ -179,10 +178,6 @@ class GistMissingTokenError(GistError):
 
 
 class GistEmptyTokenError(GistError):
-    pass
-
-
-class GistInvalidTokenError(GistError):
     pass
 
 
@@ -286,13 +281,7 @@ def get_personal_access_token(config):
     except configparser.NoOptionError:
         raise GistMissingTokenError("Missing 'token' field in configuration")
 
-    token = get_value_from_command(value)
-
-    match = re.match(r"[0-9a-fA-F]+$", token)
-    if match is None:
-        raise GistInvalidTokenError("Invalid personal access token")
-
-    return token
+    return get_value_from_command(value)
 
 
 def alternative_editor(default):

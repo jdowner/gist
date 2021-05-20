@@ -34,13 +34,6 @@ def test_get_personal_access_token_empty(config, token):
         gist.client.get_personal_access_token(config)
 
 
-@pytest.mark.parametrize("token", ["123 123", "foo"])
-def test_get_personal_access_token_invalid(config, token):
-    config.set("gist", "token", token)
-    with pytest.raises(gist.client.GistInvalidTokenError):
-        gist.client.get_personal_access_token(config)
-
-
 @pytest.mark.parametrize("token", ["   123   ", "123abcABC0987"])
 def test_get_personal_access_token_valid(config, token):
     config.set("gist", "token", token)
