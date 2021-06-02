@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "python-gist"
-version = "0.10.5"
+version = "0.10.6"
 description = "Manage github gists"
 authors = ["Joshua Downer <joshua.downer@gmail.com>"]
 license = "MIT"
